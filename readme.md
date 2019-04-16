@@ -23,6 +23,8 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
 }
 ```
 
+![image](https://user-images.githubusercontent.com/16286519/56229638-f3a79b80-60ac-11e9-8cf6-e58e95ab53c1.png)
+
 ## IFreeSql 核心定义
 
 ```csharp
