@@ -60,7 +60,7 @@ namespace FreeSql {
 							MakeTemplateFile($"{entityName}-list.html", Views.List);
 
 							//ManyToOne/OneToOne
-							var getlistFilter = new List<(TableRef, string, string, string, string)>();
+							var getlistFilter = new List<(TableRef, string, string, Dictionary<string, object>, List<Dictionary<string, object>>)>();
 							foreach (var prop in tb.Properties) {
 								if (tb.ColumnsByCs.ContainsKey(prop.Key)) continue;
 								var tbref = tb.GetTableRef(prop.Key, false);
@@ -68,52 +68,12 @@ namespace FreeSql {
 								switch (tbref.RefType) {
 									case TableRefType.OneToMany: continue;
 									case TableRefType.ManyToOne:
-										if (true) {
-											var reftb = fsql.CodeFirst.GetTableByEntity(tbref.RefEntityType);
-											var reflist = await fsql.Select<object>().AsType(tbref.RefEntityType).ToListAsync();
-											var fitlerTextCol = reftb.ColumnsByCs.Values.Where(a => a.CsType == typeof(string)).FirstOrDefault();
-											var filterTextProp = fitlerTextCol == null ? null : reftb.Properties[fitlerTextCol.CsName];
-											var filterText = new List<object>();
-											var filterValue = new List<object>();
-											var filterValueProp = reftb.Properties[reftb.Primarys.FirstOrDefault().CsName];
-											foreach (var refitem in reflist) {
-												filterText.Add(filterTextProp == null ? refitem : filterTextProp.GetValue(refitem));
-												filterValue.Add(filterValueProp.GetValue(refitem));
-											}
-											//DateTimeOffset
-											//new[] {typeof(string)}.Contains()
-											getlistFilter.Add((
-												tbref,
-												tbref.RefEntityType.Name,
-												tbref.RefEntityType.Name + "_" + reftb.Primarys.FirstOrDefault().CsName,
-												JsonConvert.SerializeObject(filterText),
-												JsonConvert.SerializeObject(filterValue)
-											));
-										}
+										getlistFilter.Add(await Utils.GetTableRefData(fsql, tbref));
 										continue;
 									case TableRefType.OneToOne:
 										continue;
 									case TableRefType.ManyToMany:
-										if (true) {
-											var reftb = fsql.CodeFirst.GetTableByEntity(tbref.RefEntityType);
-											var reflist = await fsql.Select<object>().AsType(tbref.RefEntityType).ToListAsync();
-											var fitlerTextCol = reftb.ColumnsByCs.Values.Where(a => a.CsType == typeof(string)).FirstOrDefault();
-											var filterTextProp = fitlerTextCol == null ? null : reftb.Properties[fitlerTextCol.CsName];
-											var filterText = new List<object>();
-											var filterValue = new List<object>();
-											var filterValueProp = reftb.Properties[reftb.Primarys.FirstOrDefault().CsName];
-											foreach (var refitem in reflist) {
-												filterText.Add(filterTextProp == null ? refitem : filterTextProp.GetValue(refitem));
-												filterValue.Add(filterValueProp.GetValue(refitem));
-											}
-											getlistFilter.Add((
-												tbref,
-												tbref.RefEntityType.Name,
-												tbref.RefEntityType.Name + "_" + reftb.Primarys.FirstOrDefault().CsName,
-												JsonConvert.SerializeObject(filterText),
-												JsonConvert.SerializeObject(filterValue)
-											));
-										}
+										getlistFilter.Add(await Utils.GetTableRefData(fsql, tbref));
 										continue;
 								}
 							}
@@ -130,33 +90,51 @@ namespace FreeSql {
 									switch (getlistF.Item1.RefType) {
 										case TableRefType.OneToMany: continue;
 										case TableRefType.ManyToOne:
-											if (true) {
-												var funcType = typeof(Func<,>).MakeGenericType(typeof(object), typeof(bool));
-												var expParam = Expression.Parameter(entityType);
-
-												var expLambad = Expression.Lambda<Func<object, bool>>(
-													Expression.Call(
-														Expression.NewArrayInit(getlistF.Item1.Columns[0].CsType, qv.Select(c => Expression.Constant(c))),
-														getlistF.Item1.Columns[0].CsType.MakeArrayType(1).GetMethod("Contains"),
-														Expression.MakeMemberAccess(expParam, tb.Properties[getlistF.Item1.Columns[0].CsName])
-													),
-													expParam);
-
-												getselect.Where(expLambad);
-											}
+											getselect.Where(Utils.GetObjectWhereExpressionContains(tb, entityType, getlistF.Item1.Columns[0].CsName, qv));
 											continue;
 										case TableRefType.OneToOne:
 											continue;
 										case TableRefType.ManyToMany:
 											if (true) {
-												var funcType = typeof(Func<,>).MakeGenericType(typeof(object), typeof(bool));
-												var expParam = Expression.Parameter(entityType);
+												var midType = getlistF.Item1.RefMiddleEntityType;
+												var midTb = fsql.CodeFirst.GetTableByEntity(midType);
+												var midISelect = typeof(ISelect<>).MakeGenericType(midType);
 
+												var funcType = typeof(Func<,>).MakeGenericType(typeof(object), typeof(bool));
+												var expParam = Expression.Parameter(typeof(object), "a");
+												var midParam = Expression.Parameter(midType, "mdtp");
+
+												var anyMethod = midISelect.GetMethod("Any");
+												var selectExp = qv.Select(c => Expression.Convert(Expression.Constant(FreeSql.Internal.Utils.GetDataReaderValue(getlistF.Item1.MiddleColumns[1].CsType, c)), getlistF.Item1.MiddleColumns[1].CsType)).ToArray();
 												var expLambad = Expression.Lambda<Func<object, bool>>(
 													Expression.Call(
-														Expression.NewArrayInit(getlistF.Item1.Columns[0].CsType, qv.Select(c => Expression.Constant(c))),
-														getlistF.Item1.Columns[0].CsType.MakeArrayType(1).GetMethod("Contains"),
-														Expression.MakeMemberAccess(Expression.TypeAs(expParam, entityType), tb.Properties[getlistF.Item1.Columns[0].CsName])
+														Expression.Call(
+															Expression.Call(
+																Expression.Constant(fsql),
+																typeof(IFreeSql).GetMethod("Select", new Type[0]).MakeGenericMethod(midType)
+															),
+															midISelect.GetMethod("Where", new[] { typeof(Expression<>).MakeGenericType(typeof(Func<,>).MakeGenericType(midType, typeof(bool))) }),
+															Expression.Lambda(
+																typeof(Func<,>).MakeGenericType(midType, typeof(bool)),
+																Expression.AndAlso(
+																	Expression.Equal(
+																		Expression.MakeMemberAccess(Expression.TypeAs(expParam, entityType), tb.Properties[getlistF.Item1.Columns[0].CsName]),
+																		Expression.MakeMemberAccess(midParam, midTb.Properties[getlistF.Item1.MiddleColumns[0].CsName])
+																	),
+																	Expression.Call(
+																		Utils.GetLinqContains(getlistF.Item1.MiddleColumns[1].CsType),
+																		Expression.NewArrayInit(
+																			getlistF.Item1.MiddleColumns[1].CsType,
+																			selectExp
+																		),
+																		Expression.MakeMemberAccess(midParam, midTb.Properties[getlistF.Item1.MiddleColumns[1].CsName])
+																	)
+																),
+																midParam
+															)
+														),
+														anyMethod,
+														Expression.Default(anyMethod.GetParameters().FirstOrDefault().ParameterType)
 													),
 													expParam);
 
@@ -212,24 +190,117 @@ namespace FreeSql {
 						if (req.Method.ToLower() == "get") {
 							MakeTemplateFile($"{entityName}-edit.html", Views.Edit);
 
+							//ManyToOne/OneToOne
+							var getlistFilter = new Dictionary<string, (TableRef, string, string, Dictionary<string, object>, List<Dictionary<string, object>>)>();
+							var getlistManyed = new Dictionary<string, IEnumerable<string>>();
+							foreach (var prop in tb.Properties) {
+								if (tb.ColumnsByCs.ContainsKey(prop.Key)) continue;
+								var tbref = tb.GetTableRef(prop.Key, false);
+								if (tbref == null) continue;
+								switch (tbref.RefType) {
+									case TableRefType.OneToMany: continue;
+									case TableRefType.ManyToOne:
+										getlistFilter.Add(prop.Key, await Utils.GetTableRefData(fsql, tbref));
+										continue;
+									case TableRefType.OneToOne:
+										continue;
+									case TableRefType.ManyToMany:
+										getlistFilter.Add(prop.Key, await Utils.GetTableRefData(fsql, tbref));
+
+										if (getitem != null) {
+											var midType = tbref.RefMiddleEntityType;
+											var midTb = fsql.CodeFirst.GetTableByEntity(midType);
+											var manyed = await fsql.Select<object>().AsType(midType)
+												.Where(Utils.GetObjectWhereExpression(midTb, midType, tbref.MiddleColumns[0].CsName, fsql.GetEntityKeyValues(entityType, getitem)[0]))
+												.ToListAsync();
+											getlistManyed.Add(prop.Key, manyed.Select(a => fsql.GetEntityValueWithPropertyName(midType, a, tbref.MiddleColumns[1].CsName).ToString()));
+										}
+										continue;
+								}
+							}
+
 							var options = new Dictionary<string, object>();
 							options["tb"] = tb;
 							options["gethash"] = gethash;
+							options["getlistFilter"] = getlistFilter;
+							options["getlistManyed"] = getlistManyed;
 							options["postaction"] = $"{requestPathBase}restful-api/{entityName}";
 							var str = _tpl.Value.RenderFile($"{entityName}-edit.html", options);
 							await res.WriteAsync(str);
 
 						} else {
-							if (getitem == null) getitem = Activator.CreateInstance(entityType);
+							if (getitem == null) {
+								getitem = Activator.CreateInstance(entityType);
+								foreach(var getcol in tb.Columns.Values) {
+									if (new[] { typeof(DateTime), typeof(DateTime?) }.Contains(getcol.CsType) && new[] { "create_time", "createtime" }.Contains(getcol.CsName.ToLower()))
+										fsql.SetEntityValueWithPropertyName(entityType, getitem, getcol.CsName, DateTime.Now);
+								}
+							}
+							var manySave = new List<(TableRef, object[])>();
 							if (req.Form.Any()) {
 								foreach(var getcol in tb.Columns.Values) {
+									if (new[] { typeof(DateTime), typeof(DateTime?) }.Contains(getcol.CsType) && new[] { "update_time", "updatetime" }.Contains(getcol.CsName.ToLower()))
+										fsql.SetEntityValueWithPropertyName(entityType, getitem, getcol.CsName, DateTime.Now);
+
 									var reqv = req.Form[getcol.CsName].ToArray();
 									if (reqv.Any())
 										fsql.SetEntityValueWithPropertyName(entityType, getitem, getcol.CsName, reqv.Length == 1 ? (object)reqv.FirstOrDefault() : reqv);
 								}
+								//ManyToMany
+								foreach (var prop in tb.Properties) {
+									if (tb.ColumnsByCs.ContainsKey(prop.Key)) continue;
+									var tbref = tb.GetTableRef(prop.Key, false);
+									if (tbref == null) continue;
+									switch (tbref.RefType) {
+										case TableRefType.OneToMany: continue;
+										case TableRefType.ManyToOne:
+											continue;
+										case TableRefType.OneToOne:
+											continue;
+										case TableRefType.ManyToMany:
+											var midType = tbref.RefMiddleEntityType;
+
+											var reqv = req.Form[$"mn_{prop.Key}"].ToArray();
+											var reqvIndex = 0;
+											var manyVals = new object[reqv.Length];
+											foreach (var rv in reqv) {
+												var miditem = Activator.CreateInstance(midType);
+												foreach (var getcol in tb.Columns.Values) {
+													if (new[] { typeof(DateTime), typeof(DateTime?) }.Contains(getcol.CsType) && new[] { "create_time", "createtime" }.Contains(getcol.CsName.ToLower()))
+														fsql.SetEntityValueWithPropertyName(midType, miditem, getcol.CsName, DateTime.Now);
+
+													if (new[] { typeof(DateTime), typeof(DateTime?) }.Contains(getcol.CsType) && new[] { "update_time", "updatetime" }.Contains(getcol.CsName.ToLower()))
+														fsql.SetEntityValueWithPropertyName(midType, miditem, getcol.CsName, DateTime.Now);
+												}
+												fsql.SetEntityValueWithPropertyName(midType, miditem, tbref.MiddleColumns[0].CsName, fsql.GetEntityKeyValues(entityType, getitem)[0]);
+												fsql.SetEntityValueWithPropertyName(midType, miditem, tbref.MiddleColumns[1].CsName, rv);
+												manyVals[reqvIndex++] = miditem;
+											}
+											manySave.Add((tbref, manyVals));
+											continue;
+									}
+								}
 							}
 
 							using (var db = fsql.CreateDbContext()) {
+
+								foreach (var ms in manySave) {
+									var midType = ms.Item1.RefMiddleEntityType;
+
+									var manyset = db.Set<object>();
+									manyset.AsType(midType);
+									var mtb = fsql.CodeFirst.GetTableByEntity(midType);
+
+									var molds = await manyset.Select.Where(Utils.GetObjectWhereExpression(mtb, midType, ms.Item1.MiddleColumns[0].CsName, fsql.GetEntityKeyValues(entityType, getitem)[0])).ToListAsync();
+									var moldsDic = molds.ToDictionary(a => fsql.GetEntityKeyString(midType, a));
+
+									foreach (var msVal in ms.Item2) {
+										await manyset.AddOrUpdateAsync(msVal);
+										moldsDic.Remove(fsql.GetEntityKeyString(midType, msVal));
+									}
+									manyset.RemoveRange(moldsDic.Values);
+								}
+
 								var dbset = db.Set<object>();
 								dbset.AsType(entityType);
 
@@ -244,6 +315,36 @@ namespace FreeSql {
 							await Utils.Jsonp(context, new { code = 0, success = true, message = "Success", data = gethash });
 						}
 						return true;
+					case "del":
+						if (req.Method.ToLower() == "post") {
+
+							var delitems = new List<object>();
+							var reqv = new List<string[]>();
+							foreach(var delpk in tb.Primarys) {
+								var reqvs = req.Form[delpk.CsName].ToArray();
+								if (reqv.Count > 0 && reqvs.Length != reqv[0].Length) throw new Exception("删除失败，联合主键参数传递不对等");
+								reqv.Add(reqvs);
+							}
+							if (reqv[0].Length == 0) return true;
+
+							using (var ctx = fsql.CreateDbContext()) {
+								var dbset = ctx.Set<object>();
+								dbset.AsType(entityType);
+
+								for (var a = 0; a < reqv[0].Length; a++) {
+									object delitem = Activator.CreateInstance(entityType);
+									var delpkindex = 0;
+									foreach (var delpk in tb.Primarys)
+										fsql.SetEntityValueWithPropertyName(entityType, delitem, delpk.CsName, reqv[delpkindex++][a]);
+									dbset.Remove(delitem);
+								}
+								await ctx.SaveChangesAsync();
+							}
+
+							await Utils.Jsonp(context, new { code = 0, success = true, message = "Success" });
+							return true;
+						}
+						break;
 				}
 			}
 			return false;

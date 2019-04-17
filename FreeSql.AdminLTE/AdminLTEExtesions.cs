@@ -31,11 +31,22 @@ namespace FreeSql {
 
 				var req = context.Request;
 				var res = context.Response;
-				var reqPath = req.Path.Value.ToLower();
-				if (reqPath.EndsWith("/") == false) reqPath = $"{reqPath}/";
+				var location = req.Path.Value;
+				var is301 = false;
 
+				if (location.EndsWith("/") == false) {
+					is301 = true;
+					location = $"{location}/";
+				}
+
+				var reqPath = location.ToLower();
 				try {
 					if (reqPath == requestPathBase) {
+						if (is301) {
+							res.StatusCode = 301;
+							res.Headers["Location"] = location;
+							return;
+						}
 						//首页
 						var sb = new StringBuilder();
 						sb.AppendLine(@"<ul class=""treeview-menu"">");

@@ -7,7 +7,12 @@ namespace FreeSql {
 
 		public static readonly string Edit = @"
 {%
+var columns = tb.Columns as Dictionary<string, FreeSql.Internal.Model.ColumnInfo>;
 object getitem = gethash;
+var getlistfilter = getlistFilter as Dictionary<string, (FreeSql.Internal.Model.TableRef, string, string, Dictionary<string, object>, List<Dictionary<string, object>>)>;
+var getlistmanyed = getlistManyed as Dictionary<string, IEnumerable<string>>;
+
+var sb5 = new StringBuilder();
 %}
 
 <div class=""box"">
@@ -20,12 +25,42 @@ object getitem = gethash;
 				<input type=""hidden"" name=""__callback"" value=""edit_callback"" />
 				<div>
 					<table cellspacing=""0"" rules=""all"" class=""table table-bordered table-hover"" border=""1"" style=""border-collapse:collapse;"">
-{for colVal2 in tb.Columns}
+{for colVal2 in columns}
 
-	{% FreeSql.Internal.Model.ColumnInfo colVal = colVal2.Value; %}
-	
-	{% if (colVal.Attribute.IsPrimary && (new [] { typeof(Guid), typeof(Guid?) }.Contains(colVal.CsType) || colVal.Attribute.IsIdentity)) { %}
+{%
+FreeSql.Internal.Model.ColumnInfo colVal = colVal2.Value;
 
+var manyToOneFilter = getlistfilter.Values.Where(a => 
+		a.Item1.RefType == FreeSql.Internal.Model.TableRefType.ManyToOne &&
+		a.Item1.Columns.Where(b => b.CsName == colVal.CsName).Any()
+	).FirstOrDefault();
+%}
+
+	{% if (manyToOneFilter.Item1 != null) { %}
+		<tr @if=""manyToOneFilter.Item1.RefEntityType == tb.Type"">
+			<td>{#colVal.CsName}</td>
+			<td id=""{#colVal.CsName}_td""></td>
+			{%
+			sb5.AppendFormat(@""
+			$('#{3}_td').html(yieldTreeSelect(yieldTreeArray({0}, {1}, '{2}', '{3}'), '{4}', '{2}')).find('select').attr('name', '{5}');"",
+				Newtonsoft.Json.JsonConvert.SerializeObject(manyToOneFilter.Item5),
+				Newtonsoft.Json.JsonConvert.SerializeObject(FreeSql.Internal.Utils.GetDataReaderValue(manyToOneFilter.Item1.Columns[0].CsType, null)),
+				manyToOneFilter.Item1.RefColumns[0].CsName,
+				manyToOneFilter.Item1.Columns[0].CsName,
+				""{"" + ""#"" + (columns.Values.Where(a => a.CsType == typeof(string)).FirstOrDefault()?.CsName ?? manyToOneFilter.Item1.Columns[0].CsName) + ""}"",
+				colVal.CsName);
+			%}
+		</tr>
+		<tr @else=""manyToOneFilter.Item1.RefEntityType == tb.Type"">
+			<td>{#colVal.CsName}</td>
+			<td>
+				<select name=""{#colVal.CsName}"">
+					<option value="""">------ 请选择 ------</option>
+					<option @for=""eo in manyToOneFilter.Item4"" value=""{#eo.Key}"">{#eo.Value}</option>
+				</select>
+			</td>
+		</tr>
+	{% } else if (colVal.Attribute.IsVersion || colVal.Attribute.IsPrimary && (new [] { typeof(Guid), typeof(Guid?) }.Contains(colVal.CsType) || colVal.Attribute.IsIdentity)) { %}
 		{% if (getitem != null) { %}
 		<tr>
 			<td>{#colVal.CsName}</td>
@@ -34,7 +69,6 @@ object getitem = gethash;
 			</td>
 		</tr>
 		{% } %}
-
 	{% } else if (new [] { typeof(bool), typeof(bool?) }.Contains(colVal.CsType)) { %}
 		<tr>
 			<td>{#colVal.CsName}</td>
@@ -43,12 +77,14 @@ object getitem = gethash;
 			</td>
 		</tr>
 	{% } else if (new [] { typeof(DateTime), typeof(DateTime?) }.Contains(colVal.CsType) && new [] { ""create_time"", ""update_time"", ""createtime"", ""updatetime"" }.Contains(colVal.CsName.ToLower())) { %}
+		{% if (getitem != null) { %}
 		<tr>
 			<td>{#colVal.CsName}</td>
 			<td>
 				<input name=""{#colVal.CsName}"" type=""text"" readonly class=""datepicker"" style=""width:20%;background-color:#ddd;"" />
 			</td>
 		</tr>
+		{% } %}
 	{% } else if (new [] { typeof(int), typeof(int?), typeof(uint), typeof(uint?), typeof(long), typeof(long?), typeof(ulong), typeof(ulong?), typeof(short), typeof(short?), typeof(ushort), typeof(ushort?), typeof(byte), typeof(byte?), typeof(sbyte), typeof(sbyte?) }.Contains(colVal.CsType)) { %}
 		<tr>
 			<td>{#colVal.CsName}</td>
@@ -85,7 +121,7 @@ object getitem = gethash;
 				<input name=""{#colVal.CsName}_file"" type=""file"">
 			</td>
 		</tr>
-	{% } else if (new [] { typeof(string) }.Contains(colVal.CsType) && new [] { ""varchar(255)"",""nvarchar2(255)"",""varchar(255)"",""nvarchar(255)"",""nvarchar(255)"" }.Contains(colVal.Attribute.DbType) == false) { %}
+	{% } else if (new [] { typeof(string) }.Contains(colVal.CsType) && new [] { ""varchar(255)"",""nvarchar2(255)"",""varchar(255)"",""nvarchar(255)"",""nvarchar(255)"" }.Contains(colVal.Attribute.DbType.ToLower()) == false) { %}
 		<tr>
 			<td>{#colVal.CsName}</td>
 			<td>
@@ -122,6 +158,17 @@ object getitem = gethash;
 
 {/for}
 
+{% foreach (var trygetf in getlistfilter) { %}
+	<tr @if=""trygetf.Value.Item1.RefType == FreeSql.Internal.Model.TableRefType.ManyToMany"">
+		<td>{#trygetf.Key}</td>
+		<td>
+			<select name=""mn_{#trygetf.Key}"" data-placeholder=""Select {#trygetf.Value.Item1.RefEntityType.Name}"" class=""form-control select2"" multiple>
+				<option @for=""eo in trygetf.Value.Item4"" value=""{#eo.Key}"">{#eo.Value}</option>
+			</select>
+		</td>
+	</tr>
+{% } %}
+
 						<tr>
 							<td width=""8%"">&nbsp</td>
 							<td>
@@ -142,6 +189,7 @@ object getitem = gethash;
 			if (rt.success) return top.mainViewNav.goto('./?' + new Date().getTime());
 			alert(rt.message);
 		};
+{#sb5.ToString()}
 
 		var form = $('#form_add')[0];
 		var item = null;
@@ -149,6 +197,16 @@ object getitem = gethash;
 		item = {#Newtonsoft.Json.JsonConvert.SerializeObject(getitem)};
 		fillForm(form, item);
 {% } %}
+
+{%
+	foreach (var trygetmanyed in getlistmanyed) {
+		foreach (var trygetmanyeditem in trygetmanyed.Value) { %}
+			$(form.mn_{#trygetmanyed.Key}).find('option[value=""{#trygetmanyeditem}""]').attr('selected', 'selected');
+{%
+		}
+	}
+%}
+
 		top.mainViewInit();
 	})();
 </script>";
@@ -218,7 +276,7 @@ foreach (var colPk in tb.Primarys) {
 		delete fqs.page;
 		var fsc = [
 {for navfilterc in getlistFilter}
-{ name: '{#navfilterc.Item2}', field: '{#navfilterc.Item3}', text: {#navfilterc.Item4}, value: {#navfilterc.Item5} },
+{ name: '{#navfilterc.Item2}', field: '{#navfilterc.Item3}', text: {#Newtonsoft.Json.JsonConvert.SerializeObject(navfilterc.Item4.Values)}, value: {#Newtonsoft.Json.JsonConvert.SerializeObject(navfilterc.Item4.Keys)} },
 {/for}
 			null
 		];
@@ -329,12 +387,12 @@ foreach (var colPk in tb.Primarys) {
 			<section id=""right_content"" class=""content"">
 				<div style=""display:none;"">
 					<!-- Your Page Content Here-->
-					<h1>这是一个测试首页</h1>
-					<h2>swagger webapi：<a href='/swagger/' target='_blank'>/swagger/</a><h2>
-					<h2>登陆地址：<a href='/login' target='_blank'>/login</a><h2>
-
-					<h2><a href='/sys/connection' target='_blank'>查看 Mysql连接池</a><h2>
-					<h2><a href='/sys/connection/redis' target='_blank'>查看 Redis连接池</a><h2>
+					<h1>FreeSql.AdminLTE 中件间</h1>
+					<h3>
+这是 FreeSql 衍生出来的 .NETCore MVC 中间件扩展包，基于 AdminLTE 前端框架动态产生 FreeSql 实体的增删查改界面（QQ群：4336577）。
+					</h3>
+					<h2>&nbsp;</h2>
+					<h2>开源地址：<a href='https://github.com/2881099/FreeSql' target='_blank'>https://github.com/2881099/FreeSql</a><h2>
 				</div>
 			</section>
 			<!-- /.content-->
