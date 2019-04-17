@@ -19,14 +19,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="FreeSql.DbContext" Version="0.5.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.1" />
 		<PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />
 		<PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="2.1.1" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\..\FreeSql.DbContext\FreeSql.DbContext\FreeSql.DbContext.csproj" />
-		<ProjectReference Include="..\..\FreeSql\FreeSql\FreeSql.csproj" />
 	</ItemGroup>
 
 </Project>
