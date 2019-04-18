@@ -272,7 +272,7 @@ namespace FreeSql {
 													if (new[] { typeof(DateTime), typeof(DateTime?) }.Contains(getcol.CsType) && new[] { "update_time", "updatetime" }.Contains(getcol.CsName.ToLower()))
 														fsql.SetEntityValueWithPropertyName(midType, miditem, getcol.CsName, DateTime.Now);
 												}
-												fsql.SetEntityValueWithPropertyName(midType, miditem, tbref.MiddleColumns[0].CsName, fsql.GetEntityKeyValues(entityType, getitem)[0]);
+												//fsql.SetEntityValueWithPropertyName(midType, miditem, tbref.MiddleColumns[0].CsName, fsql.GetEntityKeyValues(entityType, getitem)[0]);
 												fsql.SetEntityValueWithPropertyName(midType, miditem, tbref.MiddleColumns[1].CsName, rv);
 												manyVals[reqvIndex++] = miditem;
 											}
@@ -283,6 +283,11 @@ namespace FreeSql {
 							}
 
 							using (var db = fsql.CreateDbContext()) {
+
+								var dbset = db.Set<object>();
+								dbset.AsType(entityType);
+
+								await dbset.AddOrUpdateAsync(getitem);
 
 								foreach (var ms in manySave) {
 									var midType = ms.Item1.RefMiddleEntityType;
@@ -295,16 +300,13 @@ namespace FreeSql {
 									var moldsDic = molds.ToDictionary(a => fsql.GetEntityKeyString(midType, a));
 
 									foreach (var msVal in ms.Item2) {
+										fsql.SetEntityValueWithPropertyName(midType, msVal, ms.Item1.MiddleColumns[0].CsName, fsql.GetEntityKeyValues(entityType, getitem)[0]);
 										await manyset.AddOrUpdateAsync(msVal);
 										moldsDic.Remove(fsql.GetEntityKeyString(midType, msVal));
 									}
 									manyset.RemoveRange(moldsDic.Values);
 								}
 
-								var dbset = db.Set<object>();
-								dbset.AsType(entityType);
-
-								await dbset.AddOrUpdateAsync(getitem);
 								await db.SaveChangesAsync();
 							}
 							gethash = new Dictionary<string, object>();
