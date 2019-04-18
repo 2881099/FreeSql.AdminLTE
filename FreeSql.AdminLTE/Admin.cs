@@ -236,7 +236,7 @@ namespace FreeSql {
 										fsql.SetEntityValueWithPropertyName(entityType, getitem, getcol.CsName, DateTime.Now);
 								}
 							}
-							var manySave = new List<(TableRef, object[])>();
+							var manySave = new List<(TableRef, object[], List<object>)>();
 							if (req.Form.Any()) {
 								foreach(var getcol in tb.Columns.Values) {
 									if (new[] { typeof(DateTime), typeof(DateTime?) }.Contains(getcol.CsType) && new[] { "update_time", "updatetime" }.Contains(getcol.CsName.ToLower()))
@@ -259,6 +259,7 @@ namespace FreeSql {
 											continue;
 										case TableRefType.ManyToMany:
 											var midType = tbref.RefMiddleEntityType;
+											var mtb = fsql.CodeFirst.GetTableByEntity(midType);
 
 											var reqv = req.Form[$"mn_{prop.Key}"].ToArray();
 											var reqvIndex = 0;
@@ -276,11 +277,13 @@ namespace FreeSql {
 												fsql.SetEntityValueWithPropertyName(midType, miditem, tbref.MiddleColumns[1].CsName, rv);
 												manyVals[reqvIndex++] = miditem;
 											}
-											manySave.Add((tbref, manyVals));
+											var molds = await fsql.Select<object>().AsType(midType).Where(Utils.GetObjectWhereExpression(mtb, midType, tbref.MiddleColumns[0].CsName, fsql.GetEntityKeyValues(entityType, getitem)[0])).ToListAsync();
+											manySave.Add((tbref, manyVals, molds));
 											continue;
 									}
 								}
 							}
+
 
 							using (var db = fsql.CreateDbContext()) {
 
@@ -291,14 +294,11 @@ namespace FreeSql {
 
 								foreach (var ms in manySave) {
 									var midType = ms.Item1.RefMiddleEntityType;
+									var moldsDic = ms.Item3.ToDictionary(a => fsql.GetEntityKeyString(midType, a));
 
 									var manyset = db.Set<object>();
 									manyset.AsType(midType);
-									var mtb = fsql.CodeFirst.GetTableByEntity(midType);
-
-									var molds = await manyset.Select.Where(Utils.GetObjectWhereExpression(mtb, midType, ms.Item1.MiddleColumns[0].CsName, fsql.GetEntityKeyValues(entityType, getitem)[0])).ToListAsync();
-									var moldsDic = molds.ToDictionary(a => fsql.GetEntityKeyString(midType, a));
-
+									
 									foreach (var msVal in ms.Item2) {
 										fsql.SetEntityValueWithPropertyName(midType, msVal, ms.Item1.MiddleColumns[0].CsName, fsql.GetEntityKeyValues(entityType, getitem)[0]);
 										await manyset.AddOrUpdateAsync(msVal);
