@@ -51,7 +51,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 				colVal.CsName);
 			%}
 		</tr>
-		<tr @else=""manyToOneFilter.Item1.RefEntityType == tb.Type"">
+		<tr @else="""">
 			<td>{#colVal.CsName}</td>
 			<td>
 				<select name=""{#colVal.CsName}"">

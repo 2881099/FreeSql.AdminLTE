@@ -11,29 +11,42 @@ namespace TestDemo01.Entitys {
 		public string Title { get; set; }
 		public string Url { get; set; }
 
-		public virtual ICollection<Tag> Tags { get; set; }
 
 		[Column(IsVersion = true)]
 		public long versionRow { get; set; }
 	}
 	public class Song_tag {
 		public int Song_id { get; set; }
-		public virtual Song Song { get; set; }
 
 		public int Tag_id { get; set; }
-		public virtual Tag Tag { get; set; }
 	}
 
 	public class Tag {
 		[Column(IsIdentity = true)]
 		public int Id { get; set; }
 		public int? Parent_id { get; set; }
-		public virtual Tag Parent { get; set; }
 
 		public decimal? Ddd { get; set; }
 		public string Name { get; set; }
+	}
 
-		public virtual ICollection<Song> Songs { get; set; }
-		public virtual ICollection<Tag> Tags { get; set; }
+
+	public class User {
+		[Column(IsIdentity = true)]
+		public int Id { get; set; }
+
+		public string Name { get; set; }
+
+		public ICollection<UserImage> UserImages { get; set; }
+	}
+
+	public class UserImage {
+		[Column(IsIdentity = true)]
+		public int Id { get; set; }
+
+		public string Url { get; set; }
+
+		public int User_id { get; set; }
+		public virtual User User { get; set; }
 	}
 }

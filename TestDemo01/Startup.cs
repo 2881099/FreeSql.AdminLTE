@@ -1,5 +1,4 @@
 ﻿using FreeSql;
-using FreeSql.DataAnnotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -7,9 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
-using FreeSql;
 
 namespace TestDemo01 {
 	public class Startup {
@@ -52,7 +49,9 @@ namespace TestDemo01 {
 			//可以配置子目录访问，如：/testadmin/
 			app.UseFreeAdminLTE("/",
 				typeof(TestDemo01.Entitys.Song),
-				typeof(TestDemo01.Entitys.Tag));
+				typeof(TestDemo01.Entitys.Tag),
+				typeof(TestDemo01.Entitys.User),
+				typeof(TestDemo01.Entitys.UserImage));
 		}
 	}
 
