@@ -227,7 +227,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 					<tr>
 						<th scope=""col"" style=""width:2%;""><input type=""checkbox"" onclick=""$('#GridView1 tbody tr').each(function (idx, el) { var chk = $(el).find('td:first input[type=\'checkbox\']')[0]; if (chk) chk.checked = !chk.checked; });"" /></th>
 
-						<th @for=""colVal in tb.Columns"" scope=""col"">{#colVal.Key}</th>
+						<th @for=""colVal in tb.ColumnsByCs"" scope=""col"">{#colVal.Key}</th>
 						
 						<th scope=""col"" style=""width:5%;"">&nbsp;</th>
 					</tr>
@@ -249,7 +249,7 @@ foreach (var colPk in tb.Primarys) {
 %}
 							<td><input type=""checkbox"" id=""id"" name=""id"" value=""{#rowitemIdVal}"" /></td>
 
-							<td @for=""colVal in tb.Columns"">{#rowitem[colVal.Key]}</td>
+							<td @for=""colVal in tb.ColumnsByCs"">{#rowitem[colVal.Key]}</td>
 
 							<td><a href=""./edit?{#editParams}"">修改</a></td>
 						</tr>
