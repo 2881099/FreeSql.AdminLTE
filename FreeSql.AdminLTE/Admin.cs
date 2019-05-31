@@ -294,7 +294,7 @@ namespace FreeSql {
 
 								foreach (var ms in manySave) {
 									var midType = ms.Item1.RefMiddleEntityType;
-									var moldsDic = ms.Item3.ToDictionary(a => fsql.GetEntityKeyString(midType, a));
+									var moldsDic = ms.Item3.ToDictionary(a => fsql.GetEntityKeyString(midType, a, true));
 
 									var manyset = db.Set<object>();
 									manyset.AsType(midType);
@@ -302,7 +302,7 @@ namespace FreeSql {
 									foreach (var msVal in ms.Item2) {
 										fsql.SetEntityValueWithPropertyName(midType, msVal, ms.Item1.MiddleColumns[0].CsName, fsql.GetEntityKeyValues(entityType, getitem)[0]);
 										await manyset.AddOrUpdateAsync(msVal);
-										moldsDic.Remove(fsql.GetEntityKeyString(midType, msVal));
+										moldsDic.Remove(fsql.GetEntityKeyString(midType, msVal, true));
 									}
 									manyset.RemoveRange(moldsDic.Values);
 								}
