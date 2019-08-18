@@ -35,7 +35,7 @@ public void ConfigureServices(IServiceCollection services) {
 	services.AddSingleton<IFreeSql>(fsql);
 }
 
-public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory) {
+public void Configure(IApplicationBuilder app) {
 	app.UseFreeAdminLTE("/testadmin/",
 		typeof(TestDemo01.Entitys.Song),
 		typeof(TestDemo01.Entitys.Tag));

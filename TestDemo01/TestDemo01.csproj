@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FreeSql.Provider.Sqlite" Version="0.6.1" />
+    <PackageReference Include="FreeSql.Provider.Sqlite" Version="0.8.8" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
