@@ -1,18 +1,15 @@
-﻿using Microsoft.CSharp;
-using System;
-using System.CodeDom.Compiler;
+﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace FreeSql.Generator {
-	public class TemplateEngin : IDisposable {
+namespace FreeSql.Template
+{
+    public class TemplateEngin : IDisposable {
 		public interface ITemplateOutput {
 			/// <summary>
 			/// 
@@ -115,11 +112,11 @@ using System.Text;
 using System.Text.RegularExpressions;{1}
 
 //namespace TplDynamicCodeGenerate {{
-	public class TplDynamicCodeGenerate_view{0} : FreeSql.Generator.TemplateEngin.ITemplateOutput {{
-		public FreeSql.Generator.TemplateEngin.TemplateReturnInfo OuTpUt(StringBuilder tOuTpUt, IDictionary oPtIoNs, string rEfErErFiLeNaMe, FreeSql.Generator.TemplateEngin tEmPlAtEsEnDeR) {{
-			FreeSql.Generator.TemplateEngin.TemplateReturnInfo rTn = tOuTpUt == null ? 
-				new FreeSql.Generator.TemplateEngin.TemplateReturnInfo {{ Sb = (tOuTpUt = new StringBuilder()), Blocks = new Dictionary<string, int[]>() }} :
-				new FreeSql.Generator.TemplateEngin.TemplateReturnInfo {{ Sb = tOuTpUt, Blocks = new Dictionary<string, int[]>() }};
+	public class TplDynamicCodeGenerate_view{0} : FreeSql.Template.TemplateEngin.ITemplateOutput {{
+		public FreeSql.Template.TemplateEngin.TemplateReturnInfo OuTpUt(StringBuilder tOuTpUt, IDictionary oPtIoNs, string rEfErErFiLeNaMe, FreeSql.Template.TemplateEngin tEmPlAtEsEnDeR) {{
+			FreeSql.Template.TemplateEngin.TemplateReturnInfo rTn = tOuTpUt == null ? 
+				new FreeSql.Template.TemplateEngin.TemplateReturnInfo {{ Sb = (tOuTpUt = new StringBuilder()), Blocks = new Dictionary<string, int[]>() }} :
+				new FreeSql.Template.TemplateEngin.TemplateReturnInfo {{ Sb = tOuTpUt, Blocks = new Dictionary<string, int[]>() }};
 			Dictionary<string, int[]> TPL__blocks = rTn.Blocks;
 			Stack<int[]> TPL__blocks_stack = new Stack<int[]>();
 			int[] TPL__blocks_stack_peek;
@@ -133,7 +130,7 @@ using System.Text.RegularExpressions;{1}
 						nEwoPtIoNs[TPL__forc_dIc_dE.Key] = TPL__forc_dIc_dE.Value;
 				return nEwoPtIoNs;
 			}});
-			FreeSql.Generator.TemplateEngin.TemplateIf tPlIf = delegate(object exp) {{
+			FreeSql.Template.TemplateEngin.TemplateIf tPlIf = delegate(object exp) {{
 				if (exp is bool) return (bool)exp;
 				if (exp == null) return false;
 				if (exp is int && (int)exp == 0) return false;
@@ -146,11 +143,11 @@ using System.Text.RegularExpressions;{1}
 				if (exp is decimal && (decimal)exp == 0) return false;
 				return true;
 			}};
-			FreeSql.Generator.TemplateEngin.TemplatePrint print = delegate(object[] pArMs) {{
+			FreeSql.Template.TemplateEngin.TemplatePrint print = delegate(object[] pArMs) {{
 				if (pArMs == null || pArMs.Length == 0) return;
 				foreach (object pArMs_A in pArMs) if (pArMs_A != null) tOuTpUt.Append(pArMs_A);
 			}};
-			FreeSql.Generator.TemplateEngin.TemplatePrint Print = print;", view, usings?.Any() == true ? $"\r\nusing {string.Join(";\r\nusing ", usings)};" : "");
+			FreeSql.Template.TemplateEngin.TemplatePrint Print = print;", view, usings?.Any() == true ? $"\r\nusing {string.Join(";\r\nusing ", usings)};" : "");
 
 			#region {miss}...{/miss}块内容将不被解析
 			string[] tmp_content_arr = _reg_miss.Split(tplcode);
@@ -409,7 +406,7 @@ tOuTpUt.Append(""";
 			sb.Append(@""");");
 			if (string.IsNullOrEmpty(extends) == false) {
 				sb.AppendFormat(@"
-FreeSql.Generator.TemplateEngin.TemplateReturnInfo eXtEnDs_ReT = tEmPlAtEsEnDeR.RenderFile2(null, pRoCeSsOpTiOnS(), ""{0}"", rEfErErFiLeNaMe);
+FreeSql.Template.TemplateEngin.TemplateReturnInfo eXtEnDs_ReT = tEmPlAtEsEnDeR.RenderFile2(null, pRoCeSsOpTiOnS(), ""{0}"", rEfErErFiLeNaMe);
 string rTn_Sb_string = rTn.Sb.ToString();
 foreach(string eXtEnDs_ReT_blocks_key in eXtEnDs_ReT.Blocks.Keys) {{
 	if (rTn.Blocks.ContainsKey(eXtEnDs_ReT_blocks_key)) {{
@@ -437,7 +434,7 @@ return rTn;");
 	}
 //}
 ");
-			var str = "FreeSql.Generator.TemplateEngin.TemplatePrint Print = print;";
+			var str = "FreeSql.Template.TemplateEngin.TemplatePrint Print = print;";
 			int dim_idx = sb.ToString().IndexOf(str) + str.Length;
 			foreach (string dic_name in options_copy.Keys) {
 				sb.Insert(dim_idx, string.Format(@"

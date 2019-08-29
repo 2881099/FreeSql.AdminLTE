@@ -6,7 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace FreeSql.Generator {
+namespace FreeSql.Template
+{
 	public class TemplateGenerator {
 
 		public void Build(IDbFirst dbfirst, string templateDirectory, string outputDirectory, params string[] database) {

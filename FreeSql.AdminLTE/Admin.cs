@@ -15,10 +15,10 @@ namespace FreeSql {
 	static class Admin {
 
 		static string _tplViewDir;
-		static Lazy<FreeSql.Generator.TemplateEngin> _tpl = new Lazy<Generator.TemplateEngin>(() => {
+		static Lazy<FreeSql.Template.TemplateEngin> _tpl = new Lazy<Template.TemplateEngin>(() => {
 			_tplViewDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "FreeSql.AdminLTE.Views/");
 			if (Directory.Exists(_tplViewDir) == false) Directory.CreateDirectory(_tplViewDir);
-			return new FreeSql.Generator.TemplateEngin(_tplViewDir);
+			return new FreeSql.Template.TemplateEngin(_tplViewDir);
 		});
 		static ConcurrentDictionary<string, object> newTplLock = new ConcurrentDictionary<string, object>();
 		static ConcurrentDictionary<string, bool> newTpl = new ConcurrentDictionary<string, bool>();
