@@ -1106,14 +1106,15 @@ public static class GlobalExtensions {{
 
             #region 多对一，多对多设置
             var listKeyWhere = "";
-            var listLeftJoin = "";
+            var listInclude = "";
             var listFromQuery = "";
             var listFromQuerySelect = "";
             var listFromQueryMultiCombine = "";
+            var editIncludeMany = "";
             var editFromForm = "";
             var editFromFormAdd = "";
             var editFromFormEdit = "";
-            var editFromFormMultiCombine = "";
+            //var editFromFormMultiCombine = "";
             var delFromNew = "";
             foreach (var col in tb.Columns)
             {
@@ -1136,7 +1137,7 @@ public static class GlobalExtensions {{
                         break;
                     case TableRefType.ManyToOne:
                     case TableRefType.OneToOne:
-                        listLeftJoin += $".Include(a => a.{prop.Key})";
+                        listInclude += $".Include(a => a.{prop.Key})";
                         var treftb = _fsql.CodeFirst.GetTableByEntity(tref.RefEntityType);
                         foreach (var col in treftb.Columns)
                         {
@@ -1182,14 +1183,16 @@ public static class GlobalExtensions {{
                     case TableRefType.ManyToMany:
                         if (tref.RefColumns.Count == 1)
                         {
-                            var mnNs = $"mn_{prop.Name}_{tref.RefColumns[0].CsName}s";
+                            var mnNs = $"mn_{prop.Name}_{tref.RefColumns[0].CsName}";
                             listFromQuery += $", [FromQuery] {tref.RefColumns[0].CsType.GetGenericName()}[] {mnNs}";
                             listFromQuerySelect += $"\r\n                .WhereIf({mnNs}?.Any() == true, a => a.{prop.Name}.AsSelect().Any(b => {mnNs}.Contains(b.{tref.RefColumns[0].CsName})))";
+
+                            editIncludeMany += $".IncludeMany(a => a.{prop.Name})";
                             editFromForm += $", [FromForm] {tref.RefColumns[0].CsType.GetGenericName()}[] {mnNs}";
                             editFromFormAdd += $@"
                 //关联 {tref.RefEntityType.Name}
-                var mn_{prop.Name}s = {mnNs}.Select((mn, idx) => new {tref.RefMiddleEntityType.Name} {{ {tref.MiddleColumns[tref.Columns.Count].CsName} = mn, {string.Join(", ", tref.Columns.Select((a, idx) => $"{tref.MiddleColumns[idx].CsName} = item.{a.CsName}"))} }}).ToArray();
-                await ctx.AddRangeAsync(mn_{prop.Name}s);";
+                var mn_{prop.Name} = {mnNs}.Select((mn, idx) => new {tref.RefMiddleEntityType.Name} {{ {tref.MiddleColumns[tref.Columns.Count].CsName} = mn, {string.Join(", ", tref.Columns.Select((a, idx) => $"{tref.MiddleColumns[idx].CsName} = item.{a.CsName}"))} }}).ToArray();
+                await ctx.AddRangeAsync(mn_{prop.Name});";
                             editFromFormEdit += $@"
                 //关联 {tref.RefEntityType.Name}
                 if ({mnNs} != null)
@@ -1202,16 +1205,16 @@ public static class GlobalExtensions {{
                         if (idx == -1) ctx.Remove(olditem);
                         else {mnNs}_list.RemoveAt(idx);
                     }}
-                    var mn_{prop.Name}s = {mnNs}.Select((mn, idx) => new {tref.RefMiddleEntityType.Name} {{ {tref.MiddleColumns[tref.Columns.Count].CsName} = mn, {string.Join(", ", tref.Columns.Select((a, idx) => $"{tref.MiddleColumns[idx].CsName} = item.{a.CsName}"))} }}).ToArray();
-                    await ctx.AddRangeAsync(mn_{prop.Name}s);
+                    var mn_{prop.Name} = {mnNs}_list.Select((mn, idx) => new {tref.RefMiddleEntityType.Name} {{ {tref.MiddleColumns[tref.Columns.Count].CsName} = mn, {string.Join(", ", tref.Columns.Select((a, idx) => $"{tref.MiddleColumns[idx].CsName} = item.{a.CsName}"))} }}).ToArray();
+                    await ctx.AddRangeAsync(mn_{prop.Name});
                 }}";
                         }
                         //else
                         //{
-                        //    var multiNs = $"mn_{tref.RefMiddleEntityType.Name}_{tref.RefColumns[0].CsName}s";
+                        //    var multiNs = $"mn_{tref.RefMiddleEntityType.Name}_{tref.RefColumns[0].CsName}";
                         //    for (var a = 0; a < tref.RefColumns.Count; a++)
                         //    {
-                        //        var mnNs = $"mn_{tref.RefMiddleEntityType.Name}_{tref.RefColumns[a].CsName}s";
+                        //        var mnNs = $"mn_{tref.RefMiddleEntityType.Name}_{tref.RefColumns[a].CsName}";
                         //        listFromQuery += $", [FromQuery] {tref.RefColumns[a].CsType.GetGenericName()}[] {mnNs}";
                         //        if (a > 0)
                         //            multiNs += $@"?.Select((a, idx) => a + ""|"" + {mnNs}[idx])";
@@ -1246,7 +1249,7 @@ namespace {_options.NameSpace}.Controllers
         [HttpGet]
         async public Task<ActionResult> List([FromQuery] string key{listFromQuery}, [FromQuery] int limit = 20, [FromQuery] int page = 1)
         {{{listFromQueryMultiCombine}
-            var select = fsql.Select<{entityType.Name}>(){listLeftJoin}{(string.IsNullOrEmpty(listKeyWhere) ? "" : $"\r\n                .WhereIf(!string.IsNullOrEmpty(key), a => {listKeyWhere.Substring(4)})")}{listFromQuerySelect};
+            var select = fsql.Select<{entityType.Name}>(){listInclude}{(string.IsNullOrEmpty(listKeyWhere) ? "" : $"\r\n                .WhereIf(!string.IsNullOrEmpty(key), a => {listKeyWhere.Substring(4)})")}{listFromQuerySelect};
             var items = await select.Count(out var count).Page(page, limit).ToListAsync();
             ViewBag.items = items;
             ViewBag.count = count;
@@ -1259,7 +1262,7 @@ namespace {_options.NameSpace}.Controllers
         [HttpGet(""edit"")]
         async public Task<ActionResult> Edit({string.Join(", ", tb.Primarys.Select(pk => $"[FromQuery] {pk.CsType.GetGenericName()} {pk.CsName}"))})
         {{
-            var item = await fsql.Select<{entityType.Name}>().Where(a => {string.Join(" && ", tb.Primarys.Select(pk => $"a.{pk.CsName} == {pk.CsName}"))}).FirstAsync();
+            var item = await fsql.Select<{entityType.Name}>(){editIncludeMany}.Where(a => {string.Join(" && ", tb.Primarys.Select(pk => $"a.{pk.CsName} == {pk.CsName}"))}).FirstAsync();
             if (item == null) return ApiResult.Failed.SetMessage(""记录不存在"");
             ViewBag.item = item;
             return View();
@@ -1381,8 +1384,8 @@ namespace {_options.NameSpace}.Controllers
                         fscCode += $"\r\n			{{ name: '{prop.Name}', field: '{string.Join(",", tref.Columns.Select(a => a.CsName))}', text: @Html.Json(fk_{prop.Name}s.Select(a => a{tbrefName})), value: @Html.Json(fk_{prop.Name}s.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
                         break;
                     case TableRefType.ManyToMany:
-                        selectCode += $"\r\n	var mn_{prop.Name}s = fsql.Select<{tref.RefEntityType.Name}>().ToList();";
-                        fscCode += $"\r\n			{{ name: '{prop.Name}', field: '{string.Join(",", tref.RefColumns.Select(a => $"mn_{prop.Name}_{a.CsName}"))}', text: @Html.Json(mn_{prop.Name}s.Select(a => a{tbrefName})), value: @Html.Json(mn_{prop.Name}s.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
+                        selectCode += $"\r\n	var mn_{prop.Name} = fsql.Select<{tref.RefEntityType.Name}>().ToList();";
+                        fscCode += $"\r\n			{{ name: '{prop.Name}', field: '{string.Join(",", tref.RefColumns.Select(a => $"mn_{prop.Name}_{a.CsName}"))}', text: @Html.Json(mn_{prop.Name}.Select(a => a{tbrefName})), value: @Html.Json(mn_{prop.Name}.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
                         break;
                 }
             }
@@ -1465,7 +1468,9 @@ namespace {_options.NameSpace}.Controllers
 
             #region 编辑项
             var editTr = new StringBuilder();
+            var editTrMany = new StringBuilder();
             var editParentFk = new StringBuilder();
+            var editInitSelectUI = new StringBuilder();
             Action<ColumnInfo> editTrAppend = col =>
             {
                 var lname = col.CsName.ToLower();
@@ -1554,18 +1559,32 @@ namespace {_options.NameSpace}.Controllers
                     editTrAppend(col);
                 dicCol.Add(col.CsName, true);
             }
+
+            var selectCode = "";
             foreach (var prop in tb.Properties.Values)
             {
                 if (tb.ColumnsByCsIgnore.ContainsKey(prop.Name)) continue;
                 var tref = tb.GetTableRef(prop.Name, false);
                 if (tref == null) continue;
+
+                var tbref = _fsql.CodeFirst.GetTableByEntity(tref.RefEntityType);
+                var tbrefName = tbref.Columns.Values.Where(a => a.CsType == typeof(string)).FirstOrDefault()?.CsName;
+                if (!string.IsNullOrEmpty(tbrefName)) tbrefName = $".{tbrefName}";
+
+                switch (tref.RefType)
+                {
+                    case TableRefType.ManyToOne:
+                        selectCode += $"\r\n	var fk_{prop.Name}s = fsql.Select<{tref.RefEntityType.Name}>().ToList();";
+                        break;
+                    case TableRefType.ManyToMany:
+                        selectCode += $"\r\n	var mn_{prop.Name} = fsql.Select<{tref.RefEntityType.Name}>().ToList();";
+                        break;
+                }
+
                 switch (tref.RefType)
                 {
                     case TableRefType.ManyToOne:
                     case TableRefType.OneToOne:
-                        var tbref = _fsql.CodeFirst.GetTableByEntity(tref.RefEntityType);
-                        var tbrefName = tbref.Columns.Values.Where(a => a.CsType == typeof(string)).FirstOrDefault()?.CsName;
-                        if (!string.IsNullOrEmpty(tbrefName)) tbrefName = $"?.{tbrefName}";
                         if (tref.RefEntityType == entityType) //树形关系
                         {
                             editTr.Append($@"
@@ -1589,6 +1608,19 @@ namespace {_options.NameSpace}.Controllers
 					    </tr>");
                         foreach (var col in tref.Columns) dicCol.Add(col.CsName, true);
                         break;
+                    case TableRefType.ManyToMany:
+                        editTrMany.Append($@"
+						<tr>
+							<td>{prop.Name}</td>
+							<td>
+								<select name=""mn_{prop.Name}_{tref.RefColumns[0].CsName}"" data-placeholder=""Select a {tref.RefEntityType.Name}"" class=""form-control select2"" multiple>
+									@foreach (var mn in mn_{prop.Name}) {{ <option value=""@mn.{tref.RefColumns[0].CsName}"">@mn{tbrefName}</option> }}
+								</select>
+							</td>
+						</tr>");
+                        editInitSelectUI.Append($@"item.mn_{prop.Name} = @Html.Json(item.{prop.Name});
+			for (var a = 0; a < item.mn_{prop.Name}.length; a++) $(form.mn_{prop.Name}_{tref.RefColumns[0].CsName}).find('option[value=""{{0}}""]'.format(item.mn_{prop.Name}[a].{tref.RefColumns[0].CsName})).attr('selected', 'selected');");
+                        break;
                 }
             }
             foreach (var col in tb.Columns.Values)
@@ -1597,30 +1629,7 @@ namespace {_options.NameSpace}.Controllers
                 if (dicCol.ContainsKey(col.CsName)) continue;
                 editTrAppend(col);
             }
-            #endregion
-
-            #region 多对一、多对多
-            var selectCode = "";
-            foreach (var prop in tb.Properties.Values)
-            {
-                if (tb.ColumnsByCsIgnore.ContainsKey(prop.Name)) continue;
-                var tref = tb.GetTableRef(prop.Name, false);
-                if (tref == null) continue;
-
-                var tbref = _fsql.CodeFirst.GetTableByEntity(tref.RefEntityType);
-                var tbrefName = tbref.Columns.Values.Where(a => a.CsType == typeof(string)).FirstOrDefault()?.CsName;
-                if (!string.IsNullOrEmpty(tbrefName)) tbrefName = $".{tbrefName}";
-
-                switch (tref.RefType)
-                {
-                    case TableRefType.ManyToOne:
-                        selectCode += $"\r\n	var fk_{prop.Name}s = fsql.Select<{tref.RefEntityType.Name}>().ToList();";
-                        break;
-                    case TableRefType.ManyToMany:
-                        selectCode += $"\r\n	var mn_{prop.Name}s = fsql.Select<{tref.RefEntityType.Name}>().ToList();";
-                        break;
-                }
-            }
+            editTr.Append(editTrMany);
             #endregion
 
             #region 拼接代码
@@ -1657,14 +1666,14 @@ namespace {_options.NameSpace}.Controllers
 		top.edit_callback = function (rt) {{
 			if (rt.code == 0) return top.mainViewNav.goto('./?' + new Date().getTime());
 			alert(rt.message);
-		}};
+		}};{editParentFk}
 
 		var form = $('#form_add')[0];
 		var item = null;
 		@if (item != null) {{
 			<text>
 			item = @Html.Json(item);
-			fillForm(form, item);
+			fillForm(form, item);{editInitSelectUI}
 			</text>
 		}}
 		top.mainViewInit();
