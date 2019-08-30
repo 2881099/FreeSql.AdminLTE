@@ -1,17 +1,12 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.FileProviders;
 using System;
-using System.IO;
 using System.Linq;
-using FreeSql.Extensions.EntityUtil;
-using System.Threading.Tasks;
 using System.Text;
-using System.Collections.Generic;
-using System.Reflection;
 
-namespace FreeSql {
-	public static class FreeSqlAdminLTEExtesions {
+namespace FreeSql
+{
+    public static class FreeSqlAdminLTEExtesions {
 
 		public static IApplicationBuilder UseFreeAdminLTE(this IApplicationBuilder app, string requestPathBase, params Type[] entityTypes) {
 

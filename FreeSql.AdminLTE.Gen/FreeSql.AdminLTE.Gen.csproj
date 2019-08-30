@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <IsPackable>true</IsPackable>
+        <PackAsTool>true</PackAsTool>
+        <Authors>2881099</Authors>
+        <Company>2881099</Company>
+        <Product>FreeSql</Product>
+        <Description>用于快速创建 .NETCore 2.1 + AdminLTE 后台管理项目 dotnet tool install -g FreeSqlGen</Description>
+        <PackageProjectUrl>https://github.com/2881099/FreeSql</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/2881099/FreeSql</RepositoryUrl>
+        <Version>1.0.0</Version>
+        <PackageTags>生成器,.net,core,AdminLTE</PackageTags>
+    </PropertyGroup>
+    <ItemGroup>
+      <None Remove="htm.zip" />
+      <None Remove="wwwroot.zip" />
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="Generator\htm.zip" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Colorful.Console" Version="1.2.9" />
+      <PackageReference Include="FreeSql.DbContext" Version="0.9.1" />
+      <PackageReference Include="FreeSql.Extensions.LazyLoading" Version="0.9.1" />
+    </ItemGroup>
+</Project>
