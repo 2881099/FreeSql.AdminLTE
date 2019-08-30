@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TestDemo01</name>
+    </assembly>
+    <members>
+        <member name="P:TestDemo01.Entitys.Song.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:TestDemo01.Entitys.Song.Create_time">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:TestDemo01.Entitys.Song.Is_deleted">
+            <summary>
+            软删除
+            </summary>
+        </member>
+        <member name="P:TestDemo01.Entitys.Song.Title">
+            <summary>
+            标题
+            </summary>
+        </member>
+        <member name="P:TestDemo01.Entitys.Song.Url">
+            <summary>
+            地址
+            </summary>
+        </member>
+        <member name="P:TestDemo01.Entitys.Tag.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:TestDemo01.Entitys.Tag.Parent_id">
+            <summary>
+            父id
+            </summary>
+        </member>
+        <member name="P:TestDemo01.Entitys.Tag.Ddd">
+            <summary>
+            测试字段
+            </summary>
+        </member>
+        <member name="P:TestDemo01.Entitys.Tag.Name">
+            <summary>
+            名字
+            </summary>
+        </member>
+        <member name="P:TestDemo01.Entitys.User.Name">
+            <summary>
+            用户名
+            </summary>
+        </member>
+        <member name="P:TestDemo01.Entitys.UserImage.Url">
+            <summary>
+            Url地址
+            </summary>
+        </member>
+        <member name="P:TestDemo01.Entitys.UserImage.User_id">
+            <summary>
+            用户id
+            </summary>
+        </member>
+    </members>
+</doc>
