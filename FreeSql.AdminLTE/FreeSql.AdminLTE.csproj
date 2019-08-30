@@ -19,8 +19,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FreeSql.DbContext" Version="0.8.8" />
-		<PackageReference Include="FreeSql.Extensions.LazyLoading" Version="0.8.8" />
+		<PackageReference Include="FreeSql.DbContext" Version="0.8.11" />
+		<PackageReference Include="FreeSql.Extensions.LazyLoading" Version="0.8.11" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.1" />
 		<PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />
 		<PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="2.1.1" />

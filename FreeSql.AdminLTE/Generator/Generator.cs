@@ -27,10 +27,19 @@ namespace FreeSql.AdminLTE
             if (_isdisposed) return;
             _isdisposed = true;
             _fsql?.Dispose();
-            File.Delete(_dbname);
+            try
+            {
+                File.Delete(_dbname);
+            }
+            catch { }
         }
 
-        public void WriteFullCsproj(string outputDirectory, Type[] entityTypes)
+        /// <summary>
+        /// 生成完整的AdminLTE后台管理项目
+        /// </summary>
+        /// <param name="outputDirectory"></param>
+        /// <param name="entityTypes"></param>
+        public void BuildProject(string outputDirectory, Type[] entityTypes)
         {
             if (string.IsNullOrEmpty(outputDirectory)) outputDirectory = AppDomain.CurrentDomain.BaseDirectory;
             outputDirectory = outputDirectory.TrimEnd('/', '\\');
@@ -45,51 +54,7 @@ namespace FreeSql.AdminLTE
                     sw.Close();
                 }
             };
-            #region FreeSql.AdminLTE.csproj
-            writeFile($"/{_options.NameSpace}.csproj", @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
-
-    <PropertyGroup>
-        <TargetFramework>netcoreapp2.1</TargetFramework>
-        <WarningLevel>3</WarningLevel>
-        <ServerGarbageCollection>false</ServerGarbageCollection>
-        <MvcRazorCompileOnPublish>false</MvcRazorCompileOnPublish>
-        <LangVersion>7.1</LangVersion>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=""'$(Configuration)|$(Platform)'=='Debug|AnyCPU'"">
-      <DocumentationFile>Admin.xml</DocumentationFile>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <Content Update=""nlog.config"">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include=""Microsoft.AspNetCore.App"" />
-        <PackageReference Include=""Microsoft.AspNetCore.Mvc"" Version=""2.1.1"" />
-        <PackageReference Include=""Microsoft.AspNetCore.Session"" Version=""2.1.1"" />
-        <PackageReference Include=""Microsoft.AspNetCore.Diagnostics"" Version=""2.1.1"" />
-        <PackageReference Include=""Microsoft.Extensions.Configuration.EnvironmentVariables"" Version=""2.1.1"" />
-        <PackageReference Include=""Microsoft.Extensions.Configuration.FileExtensions"" Version=""2.1.1"" />
-        <PackageReference Include=""Microsoft.Extensions.Configuration.Json"" Version=""2.1.1"" />
-        <PackageReference Include=""NLog.Extensions.Logging"" Version=""1.4.0"" />
-        <PackageReference Include=""NLog.Web.AspNetCore"" Version=""4.8.0"" />
-        <PackageReference Include=""Newtonsoft.Json"" Version=""12.0.2"" />
-        <PackageReference Include=""Swashbuckle.AspNetCore"" Version=""4.0.1"" />
-        <PackageReference Include=""Swashbuckle.AspNetCore.Annotations"" Version=""4.0.1"" />
-        <PackageReference Include=""System.Drawing.Common"" Version=""4.5.1"" />
-        <PackageReference Include=""System.Text.Encoding.CodePages"" Version=""4.5.1"" />
-
-        <PackageReference Include=""CSRedisCore"" Version=""3.1.5"" />
-        <PackageReference Include=""Caching.CSRedis"" Version=""3.0.51"" />
-        <PackageReference Include=""FreeSql.Repository"" Version=""0.8.11"" />
-        <PackageReference Include=""FreeSql.Provider.Sqlite"" Version=""0.8.11"" />
-    </ItemGroup>
-
-</Project>");
-            #endregion
+            
             #region appsettings.json
             writeFile("/appsettings.Development.json", @"{
   ""Logging"": {
@@ -1014,6 +979,7 @@ public static class GlobalExtensions {{
             }
             #endregion
 
+            var isLazyLoading = false;
             #region Views
             var ns = new Dictionary<string, bool>();
             ns.Add("System", true);
@@ -1036,6 +1002,17 @@ public static class GlobalExtensions {{
                     if (!string.IsNullOrEmpty(col.Value.CsType.Namespace) && !ns.ContainsKey(col.Value.CsType.Namespace))
                         ns.Add(col.Value.CsType.Namespace, true);
                 }
+
+                if (!isLazyLoading)
+                {
+                    foreach (var prop in tb.Properties)
+                    {
+                        if (tb.GetTableRef(prop.Key, false) == null) continue;
+                        var getProp = entityType.GetMethod($"get_{prop.Key}");
+                        var setProp = entityType.GetMethod($"set_{prop.Key}");
+                        isLazyLoading = getProp != null || setProp != null;
+                    }
+                }
             }
             writeFile("/Views/_ViewImports.cshtml", $@"@using {string.Join(";\r\n@using ", ns.Keys)};
 
@@ -1052,6 +1029,52 @@ public static class GlobalExtensions {{
                 writeFile($"/Views/{et.Name}/List.cshtml", this.GetViewListCode(et));
                 writeFile($"/Views/{et.Name}/Edit.cshtml", this.GetViewEditCode(et));
             }
+
+            #region FreeSql.AdminLTE.csproj
+            writeFile($"/{_options.NameSpace}.csproj", $@"<Project Sdk=""Microsoft.NET.Sdk.Web"">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+        <WarningLevel>3</WarningLevel>
+        <ServerGarbageCollection>false</ServerGarbageCollection>
+        <MvcRazorCompileOnPublish>false</MvcRazorCompileOnPublish>
+        <LangVersion>7.1</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=""'$(Configuration)|$(Platform)'=='Debug|AnyCPU'"">
+      <DocumentationFile>Admin.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Update=""nlog.config"">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include=""Microsoft.AspNetCore.App"" />
+        <PackageReference Include=""Microsoft.AspNetCore.Mvc"" Version=""2.1.1"" />
+        <PackageReference Include=""Microsoft.AspNetCore.Session"" Version=""2.1.1"" />
+        <PackageReference Include=""Microsoft.AspNetCore.Diagnostics"" Version=""2.1.1"" />
+        <PackageReference Include=""Microsoft.Extensions.Configuration.EnvironmentVariables"" Version=""2.1.1"" />
+        <PackageReference Include=""Microsoft.Extensions.Configuration.FileExtensions"" Version=""2.1.1"" />
+        <PackageReference Include=""Microsoft.Extensions.Configuration.Json"" Version=""2.1.1"" />
+        <PackageReference Include=""NLog.Extensions.Logging"" Version=""1.4.0"" />
+        <PackageReference Include=""NLog.Web.AspNetCore"" Version=""4.8.0"" />
+        <PackageReference Include=""Newtonsoft.Json"" Version=""12.0.2"" />
+        <PackageReference Include=""Swashbuckle.AspNetCore"" Version=""4.0.1"" />
+        <PackageReference Include=""Swashbuckle.AspNetCore.Annotations"" Version=""4.0.1"" />
+        <PackageReference Include=""System.Drawing.Common"" Version=""4.5.1"" />
+        <PackageReference Include=""System.Text.Encoding.CodePages"" Version=""4.5.1"" />
+
+        <PackageReference Include=""CSRedisCore"" Version=""3.1.5"" />
+        <PackageReference Include=""Caching.CSRedis"" Version=""3.0.51"" />
+        <PackageReference Include=""FreeSql.Repository"" Version=""0.8.11"" />
+        <PackageReference Include=""FreeSql.Provider.Sqlite"" Version=""0.8.11"" />{(isLazyLoading ? $"\r\n        <PackageReference Include=\"FreeSql.Extensions.LazyLoading\" Version=\"0.8.11\" />" : "")}
+    </ItemGroup>
+
+</Project>");
+            #endregion
         }
 
         /// <summary>
@@ -1172,7 +1195,7 @@ public static class GlobalExtensions {{
                 if ({mnNs} != null)
                 {{
                     var {mnNs}_list = {mnNs}.ToList();
-                    var oldlist = ctx.Set<{tref.RefMiddleEntityType}>().Where(a => {string.Join(" && ", tref.Columns.Select((a, idx) => $"a.{tref.MiddleColumns[idx].CsName} == item.{a.CsName}"))}).ToList();
+                    var oldlist = ctx.Set<{tref.RefMiddleEntityType.Name}>().Where(a => {string.Join(" && ", tref.Columns.Select((a, idx) => $"a.{tref.MiddleColumns[idx].CsName} == item.{a.CsName}"))}).ToList();
                     foreach (var olditem in oldlist)
                     {{
                         var idx = {mnNs}_list.FindIndex(a => a == olditem.{tref.MiddleColumns[tref.Columns.Count].CsName});
@@ -1335,6 +1358,7 @@ namespace {_options.NameSpace}.Controllers
                 listTh.Append($"\r\n						<th scope=\"col\">{(col.Comment ?? col.CsName)}</th>");
                 listTd.Append($"\r\n								<td>@item.{col.CsName}</td>");
             }
+            listTd.Append($"\r\n								<td><a href=\"./edit?{string.Join("&", tb.Primarys.Select(pk => $"{pk.CsName}=@item.{pk.CsName}"))}\">修改</a></td>");
             #endregion
 
             #region 多对一、多对多

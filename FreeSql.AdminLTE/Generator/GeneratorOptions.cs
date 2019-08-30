@@ -14,7 +14,7 @@ namespace FreeSql.AdminLTE
         /// <summary>
         /// 控制器请求路径前辍，默认为 /AdminLTE/
         /// </summary>
-        public string ControllerRouteBase { get; set; } = "/AdminLTE/";
+        public string ControllerRouteBase { get; set; } = "/adminlte/";
 
         /// <summary>
         /// 控制器基类，默认为 BaseController
