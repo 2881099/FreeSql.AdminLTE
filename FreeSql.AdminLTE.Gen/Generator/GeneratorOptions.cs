@@ -9,7 +9,7 @@ namespace FreeSql.AdminLTE
         /// <summary>
         /// 控制器命名空间（默认：FreeSql.AdminLTE）
         /// </summary>
-        public string NameSpace { get; set; } = "FreeSql.AdminLTE";
+        public string ControllerNameSpace { get; set; } = "FreeSql.AdminLTE";
 
         /// <summary>
         /// 控制器请求路径前辍（默认：/AdminLTE/）

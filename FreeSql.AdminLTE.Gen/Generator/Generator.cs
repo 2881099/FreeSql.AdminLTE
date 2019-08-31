@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace FreeSql.AdminLTE
 {
@@ -19,7 +20,7 @@ namespace FreeSql.AdminLTE
 
         public Generator(GeneratorOptions options)
         {
-            _dbname = AppDomain.CurrentDomain.BaseDirectory + Guid.NewGuid().ToString("N") + ".db";
+            _dbname = AppDomain.CurrentDomain.BaseDirectory + "freesql_adminlte_test.db";
             _fsql = new FreeSqlBuilder().UseConnectionString(DataType.Sqlite, $"data source={_dbname};max pool size=1").Build();
             _options = options;
         }
@@ -30,12 +31,10 @@ namespace FreeSql.AdminLTE
             if (_isdisposed) return;
             _isdisposed = true;
             _fsql?.Dispose();
-            try
-            {
-                File.Delete(_dbname);
-            }
-            catch { }
+            try { File.Delete(_dbname); } catch { }
         }
+
+        public Action<string> TraceLog;
 
         /// <summary>
         /// 生成AdminLTE后台管理项目
@@ -57,6 +56,7 @@ namespace FreeSql.AdminLTE
                     sw.Write(content);
                     sw.Close();
                 }
+                TraceLog?.Invoke($"OUT -> {filename}");
             };
 
             if (isDependent)
@@ -458,6 +458,7 @@ public static class GlobalExtensions
                 try
                 {
                     System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, htmDir, Encoding.UTF8);
+                    TraceLog?.Invoke($"UNZIP -> {htmDir}");
                 }
                 catch (Exception ex)
                 {
@@ -630,7 +631,7 @@ public static class GlobalExtensions
             #region 拼接代码
             return $@"using {string.Join(";\r\nusing ", ns.Keys)};
 
-namespace {_options.NameSpace}.Controllers
+namespace {_options.ControllerNameSpace}.Controllers
 {{
     [Route(""{_options.ControllerRouteBase}[controller]"")]
     public class {entityType.Name}Controller : {_options.ControllerBase}

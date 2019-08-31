@@ -11,7 +11,19 @@ namespace FreeSql.AdminLTE.Gen
 			ManualResetEvent wait = new ManualResetEvent(false);
 			new Thread(() => {
 				Thread.CurrentThread.Join(TimeSpan.FromMilliseconds(10));
-				ConsoleApp app = new ConsoleApp(args, wait);
+
+                try
+                {
+                    ConsoleApp app = new ConsoleApp(args, wait);
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    wait.Set();
+                }
 			}).Start();
 			wait.WaitOne();
 			return;
