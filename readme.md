@@ -81,4 +81,4 @@ using (var gen = new FreeSql.AdminLTE.Generator(new GeneratorOptions()))
 | -First               | 是否生成 ApiResult.cs、index.html、htm 静态资源（首次生成）|
 | -Output              | 输出路径（默认：当前目录）                                 |
 
-![image](https://user-images.githubusercontent.com/16286519/64077776-207be880-cd06-11e9-9da5-23d7e6fdc326.png)
+![image](https://user-images.githubusercontent.com/16286519/64080898-ca21a080-cd2b-11e9-92e0-fcda5058c5e7.png)
