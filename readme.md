@@ -13,7 +13,7 @@
 - 实体类的注释（请开启项目XML文档）；
 - 实体类的导航属性配置（可生成繁琐的常用后台管理功能）。
 
-# FreeSql.AdminLTE.Preview
+# 1、FreeSql.AdminLTE.Preview
 
 .NETCore MVC 中间件，基于 AdminLTE 前端框架动态产生指定 FreeSql 实体的增删查改的【预览管理功能】。
 
@@ -39,7 +39,7 @@ public void Configure(IApplicationBuilder app)
 
 ![image](https://user-images.githubusercontent.com/16286519/56298417-ad157800-6164-11e9-86c1-6270f3989487.png)
 
-# FreeSql.AdminLTE
+# 2、FreeSql.AdminLTE
 
 根据 FreeSql 实体类配置、导航关系配置，快速生成基于 MVC + Razor + AdminLTE 的后台管理系统的增删查改代码【支持二次开发】。
 
@@ -58,7 +58,7 @@ using (var gen = new FreeSql.AdminLTE.Generator(new GeneratorOptions()))
 
 > 生成后的 Controller、Razor 代码依赖 FreeSql.DbContext 库，请手工添加
 
-# FreeSql.AdminLTE.Tools
+# 3、FreeSql.AdminLTE.Tools
 
 对 FreeSql.AdminLTE 功能的工具命令化封装，命令行快速生成代码。
 
