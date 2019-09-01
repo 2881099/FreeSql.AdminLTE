@@ -46,10 +46,10 @@ namespace FreeSql {
 
 			if (!string.IsNullOrEmpty(entityName)) {
 
-				if (dicEntityTypes.TryGetValue(entityName, out var entityType) == false) throw new Exception($"UseFreeAdminLTE 错误，找不到实体类型：{entityName}");
+				if (dicEntityTypes.TryGetValue(entityName, out var entityType) == false) throw new Exception($"UseFreeAdminLtePreview 错误，找不到实体类型：{entityName}");
 
 				var tb = fsql.CodeFirst.GetTableByEntity(entityType);
-				if (tb == null) throw new Exception($"UseFreeAdminLTE 错误，实体类型无法映射：{entityType.FullName}");
+				if (tb == null) throw new Exception($"UseFreeAdminLtePreview 错误，实体类型无法映射：{entityType.FullName}");
 
 				var tpl = _tpl.Value;
 

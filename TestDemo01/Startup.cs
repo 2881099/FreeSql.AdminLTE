@@ -45,7 +45,7 @@ namespace TestDemo01
             app.UseMvc();
 
             //可以配置子目录访问，如：/testadmin/
-            app.UseFreeAdminLTE("/",
+            app.UseFreeAdminLtePreview("/",
                 typeof(TestDemo01.Entitys.Song),
                 typeof(TestDemo01.Entitys.Tag),
                 typeof(TestDemo01.Entitys.User),

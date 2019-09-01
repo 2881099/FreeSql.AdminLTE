@@ -6,9 +6,10 @@ using System.Text;
 
 namespace FreeSql
 {
-    public static class FreeSqlAdminLTEExtesions {
+    public static class AdminLteExtesions
+    {
 
-		public static IApplicationBuilder UseFreeAdminLTE(this IApplicationBuilder app, string requestPathBase, params Type[] entityTypes) {
+		public static IApplicationBuilder UseFreeAdminLtePreview(this IApplicationBuilder app, string requestPathBase, params Type[] entityTypes) {
 
 			requestPathBase = requestPathBase.ToLower();
 			if (requestPathBase.StartsWith("/") == false) requestPathBase = $"/{requestPathBase}";
@@ -16,11 +17,11 @@ namespace FreeSql
 			var restfulRequestPath = $"{requestPathBase}restful-api";
 
 			IFreeSql fsql = app.ApplicationServices.GetService(typeof(IFreeSql)) as IFreeSql;
-			if (fsql == null) throw new Exception($"UseFreeAdminLTE 错误，找不到 IFreeSql，请提前注入");
+			if (fsql == null) throw new Exception($"UseFreeAdminLtePreview 错误，找不到 IFreeSql，请提前注入");
 
 			var dicEntityTypes = entityTypes.ToDictionary(a => a.Name);
 
-			app.UseFreeAdminLTEStaticFiles(requestPathBase);
+			app.UseFreeAdminLteStaticFiles(requestPathBase);
 
 			app.Use(async (context, next) => {
 

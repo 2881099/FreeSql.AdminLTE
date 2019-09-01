@@ -12,7 +12,7 @@ using FreeSql.Internal.Model;
 using System.Linq.Expressions;
 
 namespace FreeSql {
-	internal static class Utils {
+	static class Utils {
 
 		async public static Task<string> GetBodyRawText(HttpRequest req) {
 			var charsetIndex = req.ContentType.IndexOf("charset=");

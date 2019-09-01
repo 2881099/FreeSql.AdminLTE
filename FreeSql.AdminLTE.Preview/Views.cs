@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace FreeSql {
-	internal class Views {
+	class Views {
 
 		public static readonly string Edit = @"
 {%

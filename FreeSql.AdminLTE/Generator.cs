@@ -16,7 +16,7 @@ namespace FreeSql.AdminLTE
         IFreeSql _fsql;
         GeneratorOptions _options;
         public static Func<Stream> HtmStream { get; set; } = () => typeof(Generator).GetTypeInfo().Assembly
-            .GetManifestResourceStream("FreeSql.AdminLTE.Gen.Generator.htm.zip");
+            .GetManifestResourceStream("FreeSql.AdminLTE.htm.zip");
 
         public Generator(GeneratorOptions options)
         {
@@ -49,7 +49,7 @@ namespace FreeSql.AdminLTE
 
             Action<string, string> writeFile = (path, content) =>
             {
-                var filename = $"{outputDirectory}/{path.TrimStart('/', '\\')}";
+                var filename = Path.GetFullPath($"{outputDirectory}/{path.TrimStart('/', '\\')}");
                 Directory.CreateDirectory(Path.GetDirectoryName(filename));
                 using (StreamWriter sw = new StreamWriter(filename, false, Encoding.UTF8))
                 {
@@ -68,7 +68,6 @@ namespace FreeSql.AdminLTE
             ns.Add("System.Linq", true);
             ns.Add("Newtonsoft.Json", true);
             ns.Add("FreeSql", true);
-            Thread.CurrentThread.Join(10 * 1000);
             foreach (var entityType in entityTypes)
             {
                 

@@ -18,10 +18,10 @@ namespace FreeSql {
 
 			if (!string.IsNullOrEmpty(entityName)) {
 
-				if (dicEntityTypes.TryGetValue(entityName, out var entityType) == false) throw new Exception($"UseFreeAdminLTE 错误，找不到实体类型：{entityName}");
+				if (dicEntityTypes.TryGetValue(entityName, out var entityType) == false) throw new Exception($"UseFreeAdminLtePreview 错误，找不到实体类型：{entityName}");
 
 				var tb = fsql.CodeFirst.GetTableByEntity(entityType);
-				if (tb == null) throw new Exception($"UseFreeAdminLTE 错误，实体类型无法映射：{entityType.FullName}");
+				if (tb == null) throw new Exception($"UseFreeAdminLtePreview 错误，实体类型无法映射：{entityType.FullName}");
 
 				using (var db = new FreeContext(fsql)) {
 					var dbset = db.Set<object>();
@@ -55,7 +55,7 @@ namespace FreeSql {
 								await Utils.Jsonp(context, new { code = 0, message = "Success", data = gethashlists });
 								return true;
 							}
-							if (remUrl.Length - 1 != tb.Primarys.Length) throw new Exception($"UseFreeAdminLTE 查询，参数数目与主键不匹配，应该相同");
+							if (remUrl.Length - 1 != tb.Primarys.Length) throw new Exception($"UseFreeAdminLtePreview 查询，参数数目与主键不匹配，应该相同");
 							var getitem = Activator.CreateInstance(entityType);
 							var getindex = 1;
 							foreach (var getpk in tb.Primarys)
@@ -75,7 +75,7 @@ namespace FreeSql {
 							await Utils.Jsonp(context, new { code = 0, message = "Success", data = postjsonitem });
 							return true;
 						case "put":
-							if (remUrl.Length - 1 != tb.Primarys.Length) throw new Exception($"UseFreeAdminLTE 更新错误，参数数目与主键不匹配，应该相同");
+							if (remUrl.Length - 1 != tb.Primarys.Length) throw new Exception($"UseFreeAdminLtePreview 更新错误，参数数目与主键不匹配，应该相同");
 							var putbodyraw = await Utils.GetBodyRawText(req);
 							var putjsonitem = Newtonsoft.Json.JsonConvert.DeserializeObject(putbodyraw, entityType);
 							var putindex = 1;
@@ -86,7 +86,7 @@ namespace FreeSql {
 							await Utils.Jsonp(context, new { code = 0, message = "Success" });
 							return true;
 						case "delete":
-							if (remUrl.Length - 1 != tb.Primarys.Length) throw new Exception($"UseFreeAdminLTE 删除错误，参数数目与主键不匹配，应该相同");
+							if (remUrl.Length - 1 != tb.Primarys.Length) throw new Exception($"UseFreeAdminLtePreview 删除错误，参数数目与主键不匹配，应该相同");
 							var delitem = Activator.CreateInstance(entityType);
 							var delindex = 1;
 							foreach (var delpk in tb.Primarys)

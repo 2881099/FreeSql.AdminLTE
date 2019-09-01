@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\FreeSql.AdminLTE\FreeSql.AdminLTE.csproj" />
+      <ProjectReference Include="..\FreeSql.AdminLTE.Preview\FreeSql.AdminLTE.Preview.csproj" />
     </ItemGroup>
 
 </Project>

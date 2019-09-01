@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace FreeSql.AdminLTE.Gen
+namespace FreeSql.AdminLTE.Tools
 {
     class Program
     {

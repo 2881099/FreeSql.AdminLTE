@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Text;
 
-namespace FreeSql.AdminLTE.Gen
+namespace FreeSql.AdminLTE.Tools
 {
     public class ConsoleApp {
 
@@ -20,16 +20,7 @@ namespace FreeSql.AdminLTE.Gen
 
         public ConsoleApp(string[] args, ManualResetEvent wait) {
 
-            //var ntjson = Assembly.LoadFile(@"C:\Users\28810\Desktop\ttt\src\ttt.db\bin\Debug\netstandard2.0\publish\Newtonsoft.Json.dll");
-            //var astest = Assembly.LoadFrom(@"C:\Users\28810\Desktop\ttt\src\ttt.db\bin\Debug\netstandard2.0\publish\ttt.db.dll");
-
-            ////AppDomain.CurrentDomain.AppendPrivatePath(@"C:\Users\28810\Desktop\ttt\src\ttt.db\bin\Debug\netstandard2.0\publish\");
-            ////AppDomain.CurrentDomain.Load(@"C:\Users\28810\Desktop\ttt\src\ttt.db\bin\Debug\netstandard2.0\publish\Newtonsoft.Json.dll");
-
-            ////AppDomain.CurrentDomain.Load(astest.FullName);
-            ////ntjson.GetReferencedAssemblies().ForEach(a => AppDomain.CurrentDomain.ExecuteAssembly(a.FullName));
-            //var astype = astest.GetType("ttt.Model.CategoryInfo");
-            //var attrs = astype.GetCustomAttributes();
+            //var ntjson = Assembly.LoadFile(@"C:\Users\28810\Desktop\github\ojbk\Module\Admin\bin\Debug\netstandard2.0\publish\FreeSql.dll");
 
             //using (var gen = new Generator(new GeneratorOptions()))
             //{
@@ -77,7 +68,7 @@ new Colorful.Formatter("https://github.com/2881099/FreeSql", Color.DeepSkyBlue))
 new Colorful.Formatter("基于 .NETCore 2.1 环境，在控制台当前目录的项目下，根据实体类生成 AdminLTE 后台管理功能的相关文件。", Color.SlateGray),
 new Colorful.Formatter("1、实体类的注释（请开启项目XML文档）；", Color.SlateGray),
 new Colorful.Formatter("2、实体类的导航属性配置（可生成繁琐的常用后台管理功能）。", Color.SlateGray),
-new Colorful.Formatter("FreeSql.AdminLTE.Gen", Color.White),
+new Colorful.Formatter("FreeSql.AdminLTE.Tools", Color.White),
 new Colorful.Formatter("-Find", Color.ForestGreen)
 );
 
@@ -157,7 +148,7 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
 //            if (!string.IsNullOrEmpty(shellret.warn)) Console.WriteFormatted(shellret.warn + "\r\n\r\n", Color.Yellow);
 //            if (!string.IsNullOrEmpty(shellret.info)) Console.WriteFormatted(shellret.info + "\r\n\r\n", Color.DarkGray);
 
-//            shellret = ShellRun(Directory.GetParent(Directory.GetCurrentDirectory()).FullName, "dotnet add package FreeSql.AdminLTE.Gen");
+//            shellret = ShellRun(Directory.GetParent(Directory.GetCurrentDirectory()).FullName, "dotnet add package FreeSql.AdminLTE.Tools");
 //            if (!string.IsNullOrEmpty(shellret.err))
 //            {
 //                Console.WriteFormatted(shellret.err + "\r\n\r\n", Color.Red);
@@ -185,6 +176,7 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
             var publishDir = lines.Where(a => a.Contains(" -> ") && a.TrimEnd('/', '\\').EndsWith("publish")).Select(a => a.Substring(a.IndexOf(" -> ") + 4).Trim()).LastOrDefault();
             dllFiles.AddRange(lines.Where(a => a.Contains(" -> ") && a.Trim().EndsWith(".dll")).Select(a => publishDir + a.Trim().Split('/', '\\').LastOrDefault()));
             Console.WriteFormatted(string.Join("\r\n", dllFiles) + "\r\n", Color.DarkGray);
+            File.Copy(typeof(IFreeSql).Assembly.Location, publishDir + "FreeSql.dll", true);
 
             //foreach (var pubDllFile in Directory.GetFiles(publishDir, "*.dll"))
             //{

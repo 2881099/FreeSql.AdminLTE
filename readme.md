@@ -1,17 +1,35 @@
-这是 [FreeSql](https://github.com/2881099/FreeSql) 衍生出来的 .NETCore MVC 中间件扩展包，基于 AdminLTE 前端框架动态产生 FreeSql 实体的增删查改界面（QQ群：4336577）。
+这是 [FreeSql](https://github.com/2881099/FreeSql) 衍生出来的功能包，基于 AdminLTE 前端框架提高生产效率（QQ群：4336577）
 
-> dotnet add package FreeSql.AdminLTE
+| 项目 | 版本 |
+| -- | -- | -- |
+| FreeSql.AdminLTE | netstandard2.0、net45 |
+| FreeSql.AdminLTE.Tools | netcoreapp2.1 |
+| FreeSql.AdminLTE.Preview | netstandard2.0 |
 
-## 快速开始
+三个包产生的 AdminLTE 功能几乎一样，都是根据实体类、导航关系生成默认的繁琐的后台管理功能，以下介绍他们各自的使用场景。
+
+# 生成条件
+
+- 实体类的注释（请开启项目XML文档）；
+- 实体类的导航属性配置（可生成繁琐的常用后台管理功能）。
+
+# FreeSql.AdminLTE.Preview
+
+.NETCore MVC 中间件，基于 AdminLTE 前端框架动态产生指定 FreeSql 实体的增删查改的【预览管理功能】。
+
+使用场景：开发环境的测试数据生产。
+
+> dotnet add package FreeSql.AdminLTE.Preview
 
 ```csharp
-
-public void ConfigureServices(IServiceCollection services) {
+public void ConfigureServices(IServiceCollection services)
+{
 	services.AddSingleton<IFreeSql>(fsql);
 }
 
-public void Configure(IApplicationBuilder app) {
-	app.UseFreeAdminLTE("/testadmin/",
+public void Configure(IApplicationBuilder app)
+{
+	app.UseFreeAdminLtePreview("/testadmin/",
 		typeof(TestDemo01.Entitys.Song),
 		typeof(TestDemo01.Entitys.Tag));
 }
@@ -21,42 +39,42 @@ public void Configure(IApplicationBuilder app) {
 
 ![image](https://user-images.githubusercontent.com/16286519/56298417-ad157800-6164-11e9-86c1-6270f3989487.png)
 
-## IFreeSql 核心定义
+# FreeSql.AdminLTE
+
+根据 FreeSql 实体类配置、导航关系配置，快速生成基于 MVC + Razor + AdminLTE 的后台管理系统的增删查改代码【支持二次开发】。
+
+使用场景：asp.net/asp.netcore 后台管理系统快速生成，二次开发【自定义】。
+
+> dotnet add package FreeSql.AdminLTE
 
 ```csharp
-var fsql = new FreeSql.FreeSqlBuilder()
-    .UseConnectionString(FreeSql.DataType.Sqlite, @"Data Source=|DataDirectory|/dd2.db;Pooling=true;Max Pool Size=10")
-    .UseAutoSyncStructure(true)
-    .UseNoneCommandParameter(true)
-
-    .UseMonitorCommand(cmd => Trace.WriteLine(cmd.CommandText))
-    .Build();
-
-class Song {
-    [Column(IsIdentity = true)]
-    public int Id { get; set; }
-    public string Title { get; set; }
-    public string Url { get; set; }
-    public DateTime CreateTime { get; set; }
-
-    public virtual ICollection<Tag> Tags { get; set; }
-}
-class Song_tag {
-    public int Song_id { get; set; }
-    public virtual Song Song { get; set; }
-
-    public int Tag_id { get; set; }
-    public virtual Tag Tag { get; set; }
-}
-class Tag {
-    [Column(IsIdentity = true)]
-    public int Id { get; set; }
-    public string Name { get; set; }
-
-    public int? Parent_id { get; set; }
-    public virtual Tag Parent { get; set; }
-
-    public virtual ICollection<Song> Songs { get; set; }
-    public virtual ICollection<Tag> Tags { get; set; }
+using (var gen = new FreeSql.AdminLTE.Generator(new GeneratorOptions()))
+{
+    gen.Build("d:/test/", new[] { typeof(TestDemo01.Entitys.Song) }, false);
 }
 ```
+
+# FreeSql.AdminLTE.Tools
+
+对 FreeSql.AdminLTE 功能的工具命令化封装，命令行快速生成代码。
+
+使用场景：asp.netcore 后台管理系统快速生成，二次开发。
+
+> dotnet tool install -g FreeSql.AdminLTE.Tools
+
+--- 
+
+进入后台项目（可以是空项目、或已存在的项目），执行以下命令
+
+> FreeSql.AdminLTE.Tools -Find MyTest\.Model\..+
+
+| 命令行参数 | 说明 |
+| -- | -- |
+| -Find                | * 匹配实体类FullName的正则表达式                           |
+| -ControllerNameSpace | 控制器命名空间（默认：FreeSql.AdminLTE）                   |
+| -ControllerRouteBase | 控制器请求路径前辍（默认：/AdminLTE/）                     |
+| -ControllerBase      | 控制器基类（默认：Controller）                             |
+| -First               | 是否生成 ApiResult.cs、index.html、htm 静态资源（首次生成）|
+| -Output              | 输出路径（默认：当前目录）                                 |
+
+![image](https://user-images.githubusercontent.com/16286519/64077776-207be880-cd06-11e9-9da5-23d7e6fdc326.png)

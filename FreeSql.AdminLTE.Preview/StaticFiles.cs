@@ -10,9 +10,9 @@ namespace FreeSql {
 	static class StaticFiles {
 
 		public static Func<Stream> WwwrootStream { get; set; } = () => typeof(StaticFiles).GetTypeInfo().Assembly
-			.GetManifestResourceStream("FreeSql.AdminLTE.wwwroot.zip");
+			.GetManifestResourceStream("FreeSql.AdminLTE.Preview.wwwroot.zip");
 
-		public static IApplicationBuilder UseFreeAdminLTEStaticFiles(this IApplicationBuilder app, string requestPathBase) {
+		public static IApplicationBuilder UseFreeAdminLteStaticFiles(this IApplicationBuilder app, string requestPathBase) {
 			if (_isStaticFiles == false) {
 				lock (_isStaticFilesLock) {
 					if (_isStaticFiles == false) {
@@ -30,7 +30,7 @@ namespace FreeSql {
 						try {
 							System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, wwwrootPath, Encoding.UTF8);
 						} catch (Exception ex) {
-							throw new Exception($"UseFreeAdminLTE 错误，资源文件解压失败：{ex.Message}", ex);
+							throw new Exception($"UseFreeAdminLtePreview 错误，资源文件解压失败：{ex.Message}", ex);
 						} finally {
 							File.Delete(zipPath);
 						}
