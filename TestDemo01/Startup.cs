@@ -50,22 +50,6 @@ namespace TestDemo01
                 typeof(TestDemo01.Entitys.Tag),
                 typeof(TestDemo01.Entitys.User),
                 typeof(TestDemo01.Entitys.UserImage));
-
-            //生成完整的AdminLTE后台管理项目，进行二次开发
-            var gen = new FreeSql.AdminLTE.Generator(new FreeSql.AdminLTE.GeneratorOptions
-            {
-                ControllerBase = "Controller",
-                NameSpace = "FreeSql.AdminLTE",
-                ControllerRouteBase = "/adminlte/"
-            });
-            gen.BuildProject(@"C:\Users\28810\Desktop\test", new[] {
-                typeof(TestDemo01.Entitys.Song),
-                typeof(TestDemo01.Entitys.Tag),
-                typeof(TestDemo01.Entitys.User),
-                typeof(TestDemo01.Entitys.UserImage)
-            });
-
-            var controller = gen.GetControllerCode(typeof(TestDemo01.Entitys.Song));
         }
     }
 

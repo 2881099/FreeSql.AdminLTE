@@ -41,8 +41,8 @@ namespace FreeSql.AdminLTE
         /// </summary>
         /// <param name="outputDirectory">输出目录</param>
         /// <param name="entityTypes">实体类数组</param>
-        /// <param name="isDependent">是否生成 ApiResult.cs、index.html、htm 静态资源目录</param>
-        public void Build(string outputDirectory, Type[] entityTypes, bool isDependent)
+        /// <param name="IsFirst">是否生成 ApiResult.cs、index.html、htm 静态资源目录</param>
+        public void Build(string outputDirectory, Type[] entityTypes, bool IsFirst)
         {
             if (string.IsNullOrEmpty(outputDirectory)) outputDirectory = AppDomain.CurrentDomain.BaseDirectory;
             outputDirectory = outputDirectory.TrimEnd('/', '\\');
@@ -59,8 +59,70 @@ namespace FreeSql.AdminLTE
                 TraceLog?.Invoke($"OUT -> {filename}");
             };
 
-            if (isDependent)
+            var isLazyLoading = false;
+            #region Views/_ViewImports.cshtml
+            var ns = new Dictionary<string, bool>();
+            ns.Add("System", true);
+            ns.Add("System.Collections.Generic", true);
+            ns.Add("System.Collections", true);
+            ns.Add("System.Linq", true);
+            ns.Add("Newtonsoft.Json", true);
+            ns.Add("FreeSql", true);
+            Thread.CurrentThread.Join(10 * 1000);
+            foreach (var entityType in entityTypes)
             {
+                
+                var tb = _fsql.CodeFirst.GetTableByEntity(entityType);
+                if (tb == null) throw new Exception($"类型 {entityType.FullName} 错误，不能执行生成操作");
+
+                if (!string.IsNullOrEmpty(entityType.Namespace) && !ns.ContainsKey(entityType.Namespace))
+                    ns.Add(entityType.Namespace, true);
+
+                foreach (var col in tb.Columns)
+                {
+                    if (tb.ColumnsByCsIgnore.ContainsKey(col.Key)) continue;
+                    if (!string.IsNullOrEmpty(col.Value.CsType.Namespace) && !ns.ContainsKey(col.Value.CsType.Namespace))
+                        ns.Add(col.Value.CsType.Namespace, true);
+                }
+
+                if (!isLazyLoading)
+                {
+                    foreach (var prop in tb.Properties)
+                    {
+                        if (tb.GetTableRef(prop.Key, false) == null) continue;
+                        var getProp = entityType.GetMethod($"get_{prop.Key}");
+                        var setProp = entityType.GetMethod($"set_{prop.Key}");
+                        isLazyLoading = getProp != null || setProp != null;
+                    }
+                }
+            }
+            var viewImportsPath = $"{outputDirectory}/Views/{_options.ControllerRouteBase.Trim('/', '\'')}/_ViewImports.cshtml";
+            var oldViewImports = (File.Exists(viewImportsPath) ? File.ReadAllText(viewImportsPath, Encoding.UTF8) : "").Split('\n').ToList();
+
+            foreach(var nsk in ns.Keys)
+                if (oldViewImports.Where(a => a.Trim().StartsWith("@using ") && Regex.IsMatch(a, @"@using\s+" + nsk.Replace(".", @"\.") + @"\s*;")).Any() == false)
+                    oldViewImports.Add($"@using {nsk};");
+            if (oldViewImports.Where(a => a.Trim().StartsWith("@inject ") && a.Contains("IFreeSql fsql")).Any() == false)
+                oldViewImports.Add("@inject IFreeSql fsql;");
+            if (oldViewImports.Where(a => a.Trim().StartsWith("@addTagHelper ") && Regex.IsMatch(a, @"\*\s*,\s*Microsoft\.AspNetCore\.Mvc\.TagHelpers")).Any() == false)
+                oldViewImports.Add("@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers;");
+            if (oldViewImports.Where(a => a.Trim().StartsWith("@addTagHelper ") && a.Contains("Microsoft.AspNetCore.Mvc.TagHelpers")).Any() == false)
+                oldViewImports.Add("@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers;");
+
+            writeFile($"/Views/_ViewImports.cshtml", string.Join("\r\n", oldViewImports.Select(a => a.Trim())));
+            #endregion
+
+            foreach (var et in entityTypes)
+            {
+                TraceLog?.Invoke("");
+                writeFile($"/Controllers/{_options.ControllerRouteBase.Trim('/', '\'')}/{et.GetClassName().Replace(".", "_")}Controller.cs", this.GetControllerCode(et));
+                writeFile($"/Views/{et.GetClassName().Replace(".", "_")}/List.cshtml", this.GetViewListCode(et));
+                writeFile($"/Views/{et.GetClassName().Replace(".", "_")}/Edit.cshtml", this.GetViewEditCode(et));
+            }
+
+            if (IsFirst)
+            {
+                TraceLog?.Invoke("");
                 #region Controllers/ApiResult.cs
                 writeFile("/Controllers/ApiResult.cs", $@"using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -148,67 +210,6 @@ public static class GlobalExtensions
 }}
 ");
                 #endregion
-            }
-            var isLazyLoading = false;
-            #region Views/_ViewImports.cshtml
-            var ns = new Dictionary<string, bool>();
-            ns.Add("System", true);
-            ns.Add("System.Collections.Generic", true);
-            ns.Add("System.Collections", true);
-            ns.Add("System.Linq", true);
-            ns.Add("Newtonsoft.Json", true);
-            ns.Add("FreeSql", true);
-            foreach (var entityType in entityTypes)
-            {
-                var tb = _fsql.CodeFirst.GetTableByEntity(entityType);
-                if (tb == null) throw new Exception($"类型 {entityType.FullName} 错误，不能执行生成操作");
-
-                if (!string.IsNullOrEmpty(entityType.Namespace) && !ns.ContainsKey(entityType.Namespace))
-                    ns.Add(entityType.Namespace, true);
-
-                foreach (var col in tb.Columns)
-                {
-                    if (tb.ColumnsByCsIgnore.ContainsKey(col.Key)) continue;
-                    if (!string.IsNullOrEmpty(col.Value.CsType.Namespace) && !ns.ContainsKey(col.Value.CsType.Namespace))
-                        ns.Add(col.Value.CsType.Namespace, true);
-                }
-
-                if (!isLazyLoading)
-                {
-                    foreach (var prop in tb.Properties)
-                    {
-                        if (tb.GetTableRef(prop.Key, false) == null) continue;
-                        var getProp = entityType.GetMethod($"get_{prop.Key}");
-                        var setProp = entityType.GetMethod($"set_{prop.Key}");
-                        isLazyLoading = getProp != null || setProp != null;
-                    }
-                }
-            }
-            var viewImportsPath = $"{outputDirectory}/Views/{_options.ControllerRouteBase.Trim('/', '\'')}/_ViewImports.cshtml";
-            var oldViewImports = (File.Exists(viewImportsPath) ? File.ReadAllText(viewImportsPath, Encoding.UTF8) : "").Split("\n").ToList();
-
-            foreach(var nsk in ns.Keys)
-                if (oldViewImports.Where(a => a.Trim().StartsWith("@using ") && Regex.IsMatch(a, @"@using\s+" + nsk.Replace(".", @"\.") + @"\s*;")).Any() == false)
-                    oldViewImports.Add($"@using {nsk};");
-            if (oldViewImports.Where(a => a.Trim().StartsWith("@inject ") && a.Contains("IFreeSql fsql")).Any() == false)
-                oldViewImports.Add("@inject IFreeSql fsql;");
-            if (oldViewImports.Where(a => a.Trim().StartsWith("@addTagHelper ") && Regex.IsMatch(a, @"\*\s*,\s*Microsoft\.AspNetCore\.Mvc\.TagHelpers")).Any() == false)
-                oldViewImports.Add("@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers;");
-            if (oldViewImports.Where(a => a.Trim().StartsWith("@addTagHelper ") && a.Contains("Microsoft.AspNetCore.Mvc.TagHelpers")).Any() == false)
-                oldViewImports.Add("@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers;");
-
-            writeFile($"/Views/{_options.ControllerRouteBase.Trim('/', '\'')}/_ViewImports.cshtml", string.Join("\r\n", oldViewImports.Select(a => a.Trim())));
-            #endregion
-
-            foreach (var et in entityTypes)
-            {
-                writeFile($"/Controllers/{_options.ControllerRouteBase.Trim('/', '\'')}/{et.Name}Controller.cs", this.GetControllerCode(et));
-                writeFile($"/Views/{_options.ControllerRouteBase.Trim('/', '\'')}/{et.Name}/List.cshtml", this.GetViewListCode(et));
-                writeFile($"/Views/{_options.ControllerRouteBase.Trim('/', '\'')}/{et.Name}/Edit.cshtml", this.GetViewEditCode(et));
-            }
-
-            if (isDependent)
-            {
                 #region wwwroot/index.html
                 writeFile($"/wwwroot/{_options.ControllerRouteBase.Trim('/', '\'')}/index.html", $@"<!DOCTYPE html>
 <html lang=""zh-cmn-Hans"">
@@ -458,7 +459,7 @@ public static class GlobalExtensions
                 try
                 {
                     System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, htmDir, Encoding.UTF8);
-                    TraceLog?.Invoke($"UNZIP -> {htmDir}");
+                    TraceLog?.Invoke($"OUT -> {htmDir}/*");
                 }
                 catch (Exception ex)
                 {
@@ -585,22 +586,22 @@ public static class GlobalExtensions
                             editIncludeMany += $".IncludeMany(a => a.{prop.Name})";
                             editFromForm += $", [FromForm] {tref.RefColumns[0].CsType.GetGenericName()}[] {mnNs}";
                             editFromFormAdd += $@"
-                //关联 {tref.RefEntityType.Name}
-                var mn_{prop.Name} = {mnNs}.Select((mn, idx) => new {tref.RefMiddleEntityType.Name} {{ {tref.MiddleColumns[tref.Columns.Count].CsName} = mn, {string.Join(", ", tref.Columns.Select((a, idx) => $"{tref.MiddleColumns[idx].CsName} = item.{a.CsName}"))} }}).ToArray();
+                //关联 {tref.RefEntityType.GetClassName()}
+                var mn_{prop.Name} = {mnNs}.Select((mn, idx) => new {tref.RefMiddleEntityType.GetClassName()} {{ {tref.MiddleColumns[tref.Columns.Count].CsName} = mn, {string.Join(", ", tref.Columns.Select((a, idx) => $"{tref.MiddleColumns[idx].CsName} = item.{a.CsName}"))} }}).ToArray();
                 await ctx.AddRangeAsync(mn_{prop.Name});";
                             editFromFormEdit += $@"
-                //关联 {tref.RefEntityType.Name}
+                //关联 {tref.RefEntityType.GetClassName()}
                 if ({mnNs} != null)
                 {{
                     var {mnNs}_list = {mnNs}.ToList();
-                    var oldlist = ctx.Set<{tref.RefMiddleEntityType.Name}>().Where(a => {string.Join(" && ", tref.Columns.Select((a, idx) => $"a.{tref.MiddleColumns[idx].CsName} == item.{a.CsName}"))}).ToList();
+                    var oldlist = ctx.Set<{tref.RefMiddleEntityType.GetClassName()}>().Where(a => {string.Join(" && ", tref.Columns.Select((a, idx) => $"a.{tref.MiddleColumns[idx].CsName} == item.{a.CsName}"))}).ToList();
                     foreach (var olditem in oldlist)
                     {{
                         var idx = {mnNs}_list.FindIndex(a => a == olditem.{tref.MiddleColumns[tref.Columns.Count].CsName});
                         if (idx == -1) ctx.Remove(olditem);
                         else {mnNs}_list.RemoveAt(idx);
                     }}
-                    var mn_{prop.Name} = {mnNs}_list.Select((mn, idx) => new {tref.RefMiddleEntityType.Name} {{ {tref.MiddleColumns[tref.Columns.Count].CsName} = mn, {string.Join(", ", tref.Columns.Select((a, idx) => $"{tref.MiddleColumns[idx].CsName} = item.{a.CsName}"))} }}).ToArray();
+                    var mn_{prop.Name} = {mnNs}_list.Select((mn, idx) => new {tref.RefMiddleEntityType.GetClassName()} {{ {tref.MiddleColumns[tref.Columns.Count].CsName} = mn, {string.Join(", ", tref.Columns.Select((a, idx) => $"{tref.MiddleColumns[idx].CsName} = item.{a.CsName}"))} }}).ToArray();
                     await ctx.AddRangeAsync(mn_{prop.Name});
                 }}";
                         }
@@ -622,68 +623,32 @@ public static class GlobalExtensions
                 }
             }
 
-            delFromNew += $"{tb.Primarys[0].CsName}?.Select((a, idx) => new {entityType.Name} {{ ";
-            foreach (var pk in tb.Primarys)
-                delFromNew += $"{pk.CsName} = {pk.CsName}[idx], ";
-            delFromNew = delFromNew.Remove(delFromNew.Length - 2) + " })";
-            #endregion
+            var editGet = "";
+            var editPost = "";
+            if (tb.Primarys.Any())
+            {
+                delFromNew += $"{tb.Primarys[0].CsName}?.Select((a, idx) => new {entityType.GetClassName()} {{ ";
+                foreach (var pk in tb.Primarys)
+                    delFromNew += $"{pk.CsName} = {pk.CsName}[idx], ";
+                delFromNew = delFromNew.Remove(delFromNew.Length - 2) + " })";
 
-            #region 拼接代码
-            return $@"using {string.Join(";\r\nusing ", ns.Keys)};
-
-namespace {_options.ControllerNameSpace}.Controllers
-{{
-    [Route(""{_options.ControllerRouteBase}[controller]"")]
-    public class {entityType.Name}Controller : {_options.ControllerBase}
-    {{
-        IFreeSql fsql;
-        public {entityType.Name}Controller(IFreeSql orm) {{
-            fsql = orm;
-        }}
-
-        [HttpGet]
-        async public Task<ActionResult> List([FromQuery] string key{listFromQuery}, [FromQuery] int limit = 20, [FromQuery] int page = 1)
-        {{{listFromQueryMultiCombine}
-            var select = fsql.Select<{entityType.Name}>(){listInclude}{(string.IsNullOrEmpty(listKeyWhere) ? "" : $"\r\n                .WhereIf(!string.IsNullOrEmpty(key), a => {listKeyWhere.Substring(4)})")}{listFromQuerySelect};
-            var items = await select.Count(out var count).Page(page, limit).ToListAsync();
-            ViewBag.items = items;
-            ViewBag.count = count;
-            return View();
-        }}
-
-        [HttpGet(""add"")]
-        public ActionResult Edit() => View();
+                editGet = $@"
 
         [HttpGet(""edit"")]
         async public Task<ActionResult> Edit({string.Join(", ", tb.Primarys.Select(pk => $"[FromQuery] {pk.CsType.GetGenericName()} {pk.CsName}"))})
         {{
-            var item = await fsql.Select<{entityType.Name}>(){editIncludeMany}.Where(a => {string.Join(" && ", tb.Primarys.Select(pk => $"a.{pk.CsName} == {pk.CsName}"))}).FirstAsync();
+            var item = await fsql.Select<{entityType.GetClassName()}>(){editIncludeMany}.Where(a => {string.Join(" && ", tb.Primarys.Select(pk => $"a.{pk.CsName} == {pk.CsName}"))}).FirstAsync();
             if (item == null) return ApiResult.Failed.SetMessage(""记录不存在"");
             ViewBag.item = item;
             return View();
-        }}
-
-        /***************************************** POST *****************************************/
-
-        [HttpPost(""add"")]
-        [ValidateAntiForgeryToken]
-        async public Task<ApiResult> _Add({string.Join(", ", tb.Columns.Values.Where(a => !a.Attribute.IsIgnore && !a.Attribute.IsIdentity && (!a.Attribute.IsPrimary || a.Attribute.IsPrimary && a.CsType.NullableTypeOrThis() != typeof(Guid))).Select(col => $"[FromForm] {col.CsType.GetGenericName()} {col.CsName}"))}{editFromForm})
-        {{
-            var item = new {entityType.Name}();
-            {string.Join("\r\n            ", tb.Columns.Values.Where(a => !a.Attribute.IsIgnore && !a.Attribute.IsIdentity && (!a.Attribute.IsPrimary || a.Attribute.IsPrimary && a.CsType.NullableTypeOrThis() != typeof(Guid))).Select(col => $"item.{col.CsName} = {col.CsName};"))}
-            using (var ctx = fsql.CreateDbContext())
-            {{
-                await ctx.AddAsync(item);{editFromFormAdd}
-                await ctx.SaveChangesAsync();
-            }}
-            return ApiResult<object>.Success.SetData(item);
-        }}
+        }}";
+                editPost = $@"
 
         [HttpPost(""edit"")]
         [ValidateAntiForgeryToken]
         async public Task<ApiResult> _Edit({string.Join(", ", tb.Columns.Values.Where(a => !a.Attribute.IsIgnore).Select(col => $"[FromForm] {col.CsType.GetGenericName()} {col.CsName}"))}{editFromForm})
         {{
-            var item = new {entityType.Name}();
+            var item = new {entityType.GetClassName()}();
             {string.Join("\r\n            ", tb.Primarys.Select(col => $"item.{col.CsName} = {col.CsName};"))}
             using (var ctx = fsql.CreateDbContext())
             {{
@@ -701,9 +666,53 @@ namespace {_options.ControllerNameSpace}.Controllers
         async public Task<ApiResult> _Del({string.Join(", ", tb.Primarys.Select(pk => $"[FromForm] {pk.CsType.GetGenericName()}[] {pk.CsName}"))})
         {{
             var items = {delFromNew};
-            var affrows = await fsql.Delete<{entityType.Name}>().WhereDynamic(items).ExecuteAffrowsAsync();
+            var affrows = await fsql.Delete<{entityType.GetClassName()}>().WhereDynamic(items).ExecuteAffrowsAsync();
             return ApiResult.Success.SetMessage($""更新成功，影响行数：{{affrows}}"");
+        }}";
+            }
+            #endregion
+
+            #region 拼接代码
+            return $@"using {string.Join(";\r\nusing ", ns.Keys)};
+
+namespace {_options.ControllerNameSpace}.Controllers
+{{
+    [Route(""{_options.ControllerRouteBase}[controller]"")]
+    public class {entityType.GetClassName().Replace(".", "_")}Controller : {_options.ControllerBase}
+    {{
+        IFreeSql fsql;
+        public {entityType.GetClassName().Replace(".", "_")}Controller(IFreeSql orm) {{
+            fsql = orm;
         }}
+
+        [HttpGet]
+        async public Task<ActionResult> List([FromQuery] string key{listFromQuery}, [FromQuery] int limit = 20, [FromQuery] int page = 1)
+        {{{listFromQueryMultiCombine}
+            var select = fsql.Select<{entityType.GetClassName()}>(){listInclude}{(string.IsNullOrEmpty(listKeyWhere) ? "" : $"\r\n                .WhereIf(!string.IsNullOrEmpty(key), a => {listKeyWhere.Substring(4)})")}{listFromQuerySelect};
+            var items = await select.Count(out var count).Page(page, limit).ToListAsync();
+            ViewBag.items = items;
+            ViewBag.count = count;
+            return View();
+        }}
+
+        [HttpGet(""add"")]
+        public ActionResult Edit() => View();{editGet}
+
+        /***************************************** POST *****************************************/
+
+        [HttpPost(""add"")]
+        [ValidateAntiForgeryToken]
+        async public Task<ApiResult> _Add({string.Join(", ", tb.Columns.Values.Where(a => !a.Attribute.IsIgnore && !a.Attribute.IsIdentity && (!a.Attribute.IsPrimary || a.Attribute.IsPrimary && a.CsType.NullableTypeOrThis() != typeof(Guid))).Select(col => $"[FromForm] {col.CsType.GetGenericName()} {col.CsName}"))}{editFromForm})
+        {{
+            var item = new {entityType.GetClassName()}();
+            {string.Join("\r\n            ", tb.Columns.Values.Where(a => !a.Attribute.IsIgnore && !a.Attribute.IsIdentity && (!a.Attribute.IsPrimary || a.Attribute.IsPrimary && a.CsType.NullableTypeOrThis() != typeof(Guid))).Select(col => $"item.{col.CsName} = {col.CsName};"))}
+            using (var ctx = fsql.CreateDbContext())
+            {{
+                await ctx.AddAsync(item);{editFromFormAdd}
+                await ctx.SaveChangesAsync();
+            }}
+            return ApiResult<object>.Success.SetData(item);
+        }}{editPost}
     }}
 }}";
             #endregion
@@ -722,14 +731,17 @@ namespace {_options.ControllerNameSpace}.Controllers
             #region THead Td
             var listTh = new StringBuilder();
             var listTd = new StringBuilder();
-            listTd.Append($"\r\n								<td><input type=\"checkbox\" id=\"id\" name=\"id\" value=\"{string.Join(",", tb.Primarys.Select(pk => $"@item.{pk.CsName}"))}\" /></td>");
-
             var dicCol = new Dictionary<string, bool>();
-            foreach (var col in tb.Primarys)
+
+            if (tb.Primarys.Any())
             {
-                listTh.Append($"\r\n						<th scope=\"col\">{(col.Comment ?? col.CsName)}{(col.Attribute.IsIdentity ? "(自增)" : "")}</th>");
-                listTd.Append($"\r\n								<td>@item.{col.CsName}</td>");
-                dicCol.Add(col.CsName, true);
+                listTd.Append($"\r\n								<td><input type=\"checkbox\" id=\"id\" name=\"id\" value=\"{string.Join(",", tb.Primarys.Select(pk => $"@item.{pk.CsName}"))}\" /></td>");
+                foreach (var col in tb.Primarys)
+                {
+                    listTh.Append($"\r\n						<th scope=\"col\">{(col.Comment ?? col.CsName)}{(col.Attribute.IsIdentity ? "(自增)" : "")}</th>");
+                    listTd.Append($"\r\n								<td>@item.{col.CsName}</td>");
+                    dicCol.Add(col.CsName, true);
+                }
             }
             foreach (var prop in tb.Properties.Values)
             {
@@ -756,7 +768,10 @@ namespace {_options.ControllerNameSpace}.Controllers
                 listTh.Append($"\r\n						<th scope=\"col\">{(col.Comment ?? col.CsName)}</th>");
                 listTd.Append($"\r\n								<td>@item.{col.CsName}</td>");
             }
-            listTd.Append($"\r\n								<td><a href=\"./edit?{string.Join("&", tb.Primarys.Select(pk => $"{pk.CsName}=@item.{pk.CsName}"))}\">修改</a></td>");
+            if (tb.Primarys.Any())
+            {
+                listTd.Append($"\r\n								<td><a href=\"./edit?{string.Join("&", tb.Primarys.Select(pk => $"{pk.CsName}=@item.{pk.CsName}"))}\">修改</a></td>");
+            }
             #endregion
 
             #region 多对一、多对多
@@ -775,11 +790,11 @@ namespace {_options.ControllerNameSpace}.Controllers
                 switch (tref.RefType)
                 {
                     case TableRefType.ManyToOne:
-                        selectCode += $"\r\n	var fk_{prop.Name}s = fsql.Select<{tref.RefEntityType.Name}>().ToList();";
+                        selectCode += $"\r\n	var fk_{prop.Name}s = fsql.Select<{tref.RefEntityType.GetClassName()}>().ToList();";
                         fscCode += $"\r\n			{{ name: '{prop.Name}', field: '{string.Join(",", tref.Columns.Select(a => a.CsName))}', text: @Html.Json(fk_{prop.Name}s.Select(a => a{tbrefName})), value: @Html.Json(fk_{prop.Name}s.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
                         break;
                     case TableRefType.ManyToMany:
-                        selectCode += $"\r\n	var mn_{prop.Name} = fsql.Select<{tref.RefEntityType.Name}>().ToList();";
+                        selectCode += $"\r\n	var mn_{prop.Name} = fsql.Select<{tref.RefEntityType.GetClassName()}>().ToList();";
                         fscCode += $"\r\n			{{ name: '{prop.Name}', field: '{string.Join(",", tref.RefColumns.Select(a => $"mn_{prop.Name}_{a.CsName}"))}', text: @Html.Json(mn_{prop.Name}.Select(a => a{tbrefName})), value: @Html.Json(mn_{prop.Name}.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
                         break;
                 }
@@ -811,7 +826,7 @@ namespace {_options.ControllerNameSpace}.Controllers
 						<th scope=""col"" style=""width:5%;"">&nbsp;</th>
 					</tr>
 					<tbody>
-						@foreach({entityType.Name} item in ViewBag.items) {{
+						@foreach({entityType.GetClassName()} item in ViewBag.items) {{
 							<tr>
 {listTd.ToString()}
                             </tr>
@@ -927,7 +942,7 @@ namespace {_options.ControllerNameSpace}.Controllers
 					    <tr>
 							<td>{(col.Comment ?? col.CsName)}</td>
 							<td>
-                                <select name=""{col.CsName}""{(csType.GetCustomAttribute<FlagsAttribute>() != null ? $@" data-placeholder=""Select a {csType.Name}"" class=""form-control select2"" multiple>" : @"><option value="""">------ 请选择 ------</option>")}
+                                <select name=""{col.CsName}""{(csType.GetCustomAttribute<FlagsAttribute>() != null ? $@" data-placeholder=""Select a {csType.GetClassName()}"" class=""form-control select2"" multiple>" : @"><option value="""">------ 请选择 ------</option>")}
 									@foreach (object eo in Enum.GetValues(typeof({csType.FullName}))) {{ <option value=""@eo"">@eo</option> }}
 								</select>
                             </td>
@@ -969,10 +984,10 @@ namespace {_options.ControllerNameSpace}.Controllers
                 switch (tref.RefType)
                 {
                     case TableRefType.ManyToOne:
-                        selectCode += $"\r\n	var fk_{prop.Name}s = fsql.Select<{tref.RefEntityType.Name}>().ToList();";
+                        selectCode += $"\r\n	var fk_{prop.Name}s = fsql.Select<{tref.RefEntityType.GetClassName()}>().ToList();";
                         break;
                     case TableRefType.ManyToMany:
-                        selectCode += $"\r\n	var mn_{prop.Name} = fsql.Select<{tref.RefEntityType.Name}>().ToList();";
+                        selectCode += $"\r\n	var mn_{prop.Name} = fsql.Select<{tref.RefEntityType.GetClassName()}>().ToList();";
                         break;
                 }
 
@@ -1008,7 +1023,7 @@ namespace {_options.ControllerNameSpace}.Controllers
 						<tr>
 							<td>{prop.Name}</td>
 							<td>
-								<select name=""mn_{prop.Name}_{tref.RefColumns[0].CsName}"" data-placeholder=""Select a {tref.RefEntityType.Name}"" class=""form-control select2"" multiple>
+								<select name=""mn_{prop.Name}_{tref.RefColumns[0].CsName}"" data-placeholder=""Select a {tref.RefEntityType.GetClassName()}"" class=""form-control select2"" multiple>
 									@foreach (var mn in mn_{prop.Name}) {{ <option value=""@mn.{tref.RefColumns[0].CsName}"">@mn{tbrefName}</option> }}
 								</select>
 							</td>
@@ -1030,7 +1045,7 @@ namespace {_options.ControllerNameSpace}.Controllers
             #region 拼接代码
             return $@"@{{
 	Layout = """";
-	{entityType.Name} item = ViewBag.item;{selectCode}
+	{entityType.GetClassName()} item = ViewBag.item;{selectCode}
 }}
 
 <div class=""box"">
@@ -1080,6 +1095,7 @@ namespace {_options.ControllerNameSpace}.Controllers
 
     static class TypeExtens
     {
+        public static string GetClassName(this Type that) => that.IsNested ? $"{that.DeclaringType.Name}.{that.Name}" : that.Name;
         public static string GetGenericName(this Type that)
         {
             var ret = that?.NullableTypeOrThis().Name;

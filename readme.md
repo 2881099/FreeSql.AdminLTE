@@ -2,31 +2,6 @@
 
 > dotnet add package FreeSql.AdminLTE
 
-## 更新日志
-
-### v0.5.21
-
-- 修复 实体属性大写，字段小写，模板list无法渲染的 bug；
-
-### v0.5.8
-
-- 修改 ManyToOne 添加/编辑页面 UI 未渲染的 bug；
-
-### v0.5.3
-
-- 修复 ManyToMany 添加数据时，联级保存的事务，与 CodeFirst 迁移中间表发生死锁；
-
-### v0.5.2
-
-- 修复 ManyToMany 添加数据时，未能联级保存；
-
-### v0.5.1
-
-- 实现基本的查询列表、添加数据、修改数据功能；
-- 实现 ManyToOne/ManyToMany 过滤查询功能；
-- 实现 添加/修改数据时，ManyToMany 的联级保存；
-- 实现 批量删除数据；
-
 ## 快速开始
 
 ```csharp

@@ -16,10 +16,6 @@ namespace FreeSql.AdminLTE.Gen
                 {
                     ConsoleApp app = new ConsoleApp(args, wait);
                 }
-                catch
-                {
-                    throw;
-                }
                 finally
                 {
                     wait.Set();
