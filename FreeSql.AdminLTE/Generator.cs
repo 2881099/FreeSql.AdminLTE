@@ -511,11 +511,11 @@ public static class GlobalExtensions
             var editFromFormEdit = "";
             //var editFromFormMultiCombine = "";
             var delFromNew = "";
-            foreach (var col in tb.Columns)
+            foreach (var col in tb.ColumnsByCs)
             {
-                if (tb.ColumnsByCsIgnore.ContainsKey(col.Key)) continue;
+                if (tb.ColumnsByCsIgnore.ContainsKey(col.Value.CsName)) continue;
                 if (col.Value.CsType == typeof(string))
-                    listKeyWhere += $" || a.{col.Key}.Contains(key)";
+                    listKeyWhere += $" || a.{col.Value.CsName}.Contains(key)";
 
                 if (!string.IsNullOrEmpty(col.Value.CsType.Namespace) && !ns.ContainsKey(col.Value.CsType.Namespace))
                     ns.Add(col.Value.CsType.Namespace, true);
@@ -536,9 +536,9 @@ public static class GlobalExtensions
                         var treftb = _fsql.CodeFirst.GetTableByEntity(tref.RefEntityType);
                         foreach (var col in treftb.Columns)
                         {
-                            if (treftb.ColumnsByCsIgnore.ContainsKey(col.Key)) continue;
+                            if (treftb.ColumnsByCsIgnore.ContainsKey(col.Value.CsName)) continue;
                             if (col.Value.CsType == typeof(string))
-                                listKeyWhere += $" || a.{prop.Key}.{col.Key}.Contains(key)";
+                                listKeyWhere += $" || a.{prop.Key}.{col.Value.CsName}.Contains(key)";
                         }
                         break;
                 }

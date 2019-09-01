@@ -20,7 +20,7 @@ namespace FreeSql.AdminLTE.Tools
 
         public ConsoleApp(string[] args, ManualResetEvent wait) {
 
-            //var ntjson = Assembly.LoadFile(@"C:\Users\28810\Desktop\github\ojbk\Module\Admin\bin\Debug\netstandard2.0\publish\FreeSql.dll");
+            //var ntjson = Assembly.LoadFile(@"C:\Users\28810\Desktop\testfreesql\bin\Debug\netcoreapp2.2\publish\testfreesql.dll");
 
             //using (var gen = new Generator(new GeneratorOptions()))
             //{
@@ -116,105 +116,125 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
             }
 
             var dllFiles = new List<string>();
-
-            Console.WriteFormatted("正在编译当前项目 …\r\n", Color.DarkGreen);
-            var shellret = ShellRun(null, "dotnet publish");
+            Console.WriteFormatted("正在发布当前项目(dotnet publish -r linux-x64) …\r\n", Color.DarkGreen);
+            var shellret = ShellRun(null, "dotnet publish -r linux-x64");
             if (!string.IsNullOrEmpty(shellret.err))
             {
                 Console.WriteFormatted(shellret.err + "\r\n\r\n", Color.Red);
                 return;
             }
-            if (!string.IsNullOrEmpty(shellret.info)) Console.WriteFormatted(shellret.info + "\r\n\r\n", Color.DarkGray);
+            if (!string.IsNullOrEmpty(shellret.info))
+            {
+                Console.WriteFormatted(shellret.info + "\r\n\r\n", Color.DarkGray);
+                if (int.TryParse(Regex.Match(shellret.info, @"(\d+) 个错误").Groups[1].Value, out var tryint) && tryint > 0)
+                    return;
+            }
 
-//            Console.WriteFormatted("正在创建临时项目 …\r\n", Color.DarkGreen);
-//            var tmpdir = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).FullName.Trim('/', '\\'), "/temp_freesql_adminlte_gen/");
-//            Action<string, string> writeTmpFile = (path, content) =>
-//            {
-//                var filename = $"{tmpdir}/{path.TrimStart('/', '\\')}";
-//                Directory.CreateDirectory(Path.GetDirectoryName(filename));
-//                using (StreamWriter sw = new StreamWriter(filename, false, Encoding.UTF8))
-//                {
-//                    sw.Write(content);
-//                    sw.Close();
-//                }
-//                Console.WriteFormatted($"OUT -> {filename}", Color.DarkGray);
-//            };
-//            shellret = ShellRun(Directory.GetParent(Directory.GetCurrentDirectory()).FullName, "dotnet new console");
-//            if (!string.IsNullOrEmpty(shellret.err))
-//            {
-//                Console.WriteFormatted(shellret.err + "\r\n\r\n", Color.Red);
-//                return;
-//            }
-//            if (!string.IsNullOrEmpty(shellret.warn)) Console.WriteFormatted(shellret.warn + "\r\n\r\n", Color.Yellow);
-//            if (!string.IsNullOrEmpty(shellret.info)) Console.WriteFormatted(shellret.info + "\r\n\r\n", Color.DarkGray);
-
-//            shellret = ShellRun(Directory.GetParent(Directory.GetCurrentDirectory()).FullName, "dotnet add package FreeSql.AdminLTE.Tools");
-//            if (!string.IsNullOrEmpty(shellret.err))
-//            {
-//                Console.WriteFormatted(shellret.err + "\r\n\r\n", Color.Red);
-//                return;
-//            }
-//            if (!string.IsNullOrEmpty(shellret.warn)) Console.WriteFormatted(shellret.warn + "\r\n\r\n", Color.Yellow);
-//            if (!string.IsNullOrEmpty(shellret.info)) Console.WriteFormatted(shellret.info + "\r\n\r\n", Color.DarkGray);
-
-//            writeTmpFile("Program.cs", @"using System;
-
-//namespace temp_freesql_adminlte_gen
-//{{
-//    class Program
-//    {{
-//        static void Main(string[] args)
-//        {{
-            
-//        }}
-//    }}
-//}}
-//");
-
-            Console.WriteFormatted("正在加载程序集 …\r\n", Color.DarkGreen);
             var lines = shellret.info.Split('\n');
             var publishDir = lines.Where(a => a.Contains(" -> ") && a.TrimEnd('/', '\\').EndsWith("publish")).Select(a => a.Substring(a.IndexOf(" -> ") + 4).Trim()).LastOrDefault();
             dllFiles.AddRange(lines.Where(a => a.Contains(" -> ") && a.Trim().EndsWith(".dll")).Select(a => publishDir + a.Trim().Split('/', '\\').LastOrDefault()));
-            Console.WriteFormatted(string.Join("\r\n", dllFiles) + "\r\n", Color.DarkGray);
-            File.Copy(typeof(IFreeSql).Assembly.Location, publishDir + "FreeSql.dll", true);
 
-            //foreach (var pubDllFile in Directory.GetFiles(publishDir, "*.dll"))
-            //{
-            //    try
-            //    {
-            //        var pubDll = Assembly.LoadFile(pubDllFile);
-            //        pubDll.GetReferencedAssemblies().Select(refdll => AppDomain.CurrentDomain.Load(refdll)).ToList();
-            //        Console.WriteFormatted($"LOAD -> {pubDllFile}\r\n", Color.DarkGray);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        Console.WriteFormatted($"LOAD ERR -> {pubDllFile}, {ex.Message}\r\n", Color.Yellow);
-            //    }
-            //}
-
-            var findRegexp = new Regex(ArgsFind, RegexOptions.Compiled);
-            var entityTypes = new List<Type>();
-            foreach (var dllFile in dllFiles)
+            Console.WriteFormatted("正在创建临时项目 …\r\n", Color.DarkGreen);
+            var tmpdir = Path.Combine(Path.GetTempPath(), "temp_freesql_adminlte_tools");
+            Action<string, string> writeTmpFile = (path, content) =>
             {
+                var filename = $"{tmpdir}/{path.TrimStart('/', '\\')}";
+                Directory.CreateDirectory(Path.GetDirectoryName(filename));
+                using (StreamWriter sw = new StreamWriter(filename, false, Encoding.UTF8))
+                {
+                    sw.Write(content);
+                    sw.Close();
+                }
+                Console.WriteFormatted($"OUT -> {filename}\r\n", Color.DarkGray);
+            };
+
+            var currentCsproj = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.csproj").FirstOrDefault();
+            var currentVersion = "netcoreapp2.1";
+            if (!string.IsNullOrEmpty(currentCsproj)) currentVersion = Regex.Match(File.ReadAllText(currentCsproj), @"netcoreapp\d+\.\d+")?.Groups[0].Value ?? currentVersion;
+            writeTmpFile("temp_freesql_adminlte_tools.csproj", $@"<Project Sdk=""Microsoft.NET.Sdk"">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>{currentVersion}</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include=""FreeSql.AdminLTE"" Version=""1.0.1"" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include=""{currentCsproj}"" />
+  </ItemGroup>
+</Project>
+");
+            writeTmpFile("Program.cs", $@"using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
+
+namespace temp_freesql_adminlte_tools
+{{
+    class Program
+    {{
+        static void Main(string[] args)
+        {{
+            var findRegexp = new Regex(@""{ArgsFind.Replace("\"", "\"\"")}"", RegexOptions.Compiled);
+            var entityTypes = new List<Type>();
+            foreach (var dllFile in new [] {{ @""{string.Join("\", @\"", dllFiles.Select(a => a.Replace("\"", "\"\"")))}"" }}) {{
                 var assembly = Assembly.LoadFrom(dllFile);
                 var alltypes = assembly.ExportedTypes;//.GetTypes();
                 foreach (var type in alltypes)
-                {
+                {{
                     if (type.IsClass && !type.IsInterface && !type.IsAbstract && !type.IsAnonymousType() && 
                         !type.IsEnum && !type.IsGenericType && !type.IsImport && 
                         !type.IsNested && !type.IsSealed && !type.IsValueType && type.IsVisible &&
                         findRegexp.IsMatch(type.FullName))
-                    {
-                        Console.WriteFormatted($"READY -> {type.FullName}\r\n", Color.Magenta);
+                    {{
+                        Console.WriteLine($""READY -> {{type.FullName}}"");
                         entityTypes.Add(type);
+                    }}
+                }}
+            }}
+
+            using (var gen = new FreeSql.AdminLTE.Generator(new FreeSql.AdminLTE.GeneratorOptions
+            {{
+                ControllerBase = @""{ArgsOptions.ControllerBase.Replace("\"", "\"\"")}"",
+                ControllerNameSpace = @""{ArgsOptions.ControllerNameSpace.Replace("\"", "\"\"")}"",
+                 ControllerRouteBase = @""{ArgsOptions.ControllerRouteBase.Replace("\"", "\"\"")}""
+            }}))
+            {{
+                gen.TraceLog = log => Console.WriteLine(log);
+                gen.Build(@""{ArgsOutput.Replace("\"", "\"\"")}"", entityTypes.ToArray(), {(ArgsFirst ? "true" : "false")});
+            }}
+            Console.Write($""--freesql_adminlte_tools_success--"");
+        }}
+    }}
+}}
+");
+
+            Console.WriteFormatted("\r\n正在运行生成程序 …\r\n", Color.DarkGreen);
+            shellret = ShellRun(tmpdir, "dotnet run");
+            if (!string.IsNullOrEmpty(shellret.err))
+            {
+                Console.WriteFormatted(shellret.err + "\r\n\r\n", Color.Red);
+                return;
+            }
+            if (!string.IsNullOrEmpty(shellret.info))
+            {
+                if (!shellret.info.Trim().EndsWith("--freesql_adminlte_tools_success--"))
+                    Console.WriteFormatted(shellret.info + "\r\n\r\n", Color.DarkGray);
+                else
+                {
+                    var infolines = shellret.info.Trim().Split('\n');
+                    foreach(var infoline in infolines)
+                    {
+                        if (infoline.TrimStart().StartsWith("READY -> "))
+                            Console.WriteFormatted(infoline.Trim() + "\r\n", Color.Magenta);
+                        else if (infoline.TrimStart().StartsWith("OUT -> "))
+                            Console.WriteFormatted(infoline.Trim() + "\r\n", Color.DarkGray);
+                        else if (string.IsNullOrEmpty(infoline.TrimStart()))
+                            Console.WriteFormatted("\r\n", Color.DarkGray);
                     }
                 }
-            }
-
-            using (var gen = new Generator(ArgsOptions))
-            {
-                gen.TraceLog = log => Console.WriteFormatted(log + "\r\n", Color.DarkGray);
-                gen.Build(ArgsOutput, entityTypes.ToArray(), ArgsFirst);
             }
 
             GC.Collect();

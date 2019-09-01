@@ -54,6 +54,10 @@ using (var gen = new FreeSql.AdminLTE.Generator(new GeneratorOptions()))
 }
 ```
 
+提醒：提醒：提醒：
+
+> 生成后的 Controller、Razor 代码依赖 FreeSql.DbContext 库，请手工添加
+
 # FreeSql.AdminLTE.Tools
 
 对 FreeSql.AdminLTE 功能的工具命令化封装，命令行快速生成代码。
