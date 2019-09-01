@@ -1,7 +1,7 @@
 这是 [FreeSql](https://github.com/2881099/FreeSql) 衍生出来的功能包，基于 AdminLTE 前端框架提高生产效率（QQ群：4336577）
 
 | 项目 | 版本 |
-| -- | -- | -- |
+| -- | -- |
 | FreeSql.AdminLTE | netstandard2.0、net45 |
 | FreeSql.AdminLTE.Tools | netcoreapp2.1 |
 | FreeSql.AdminLTE.Preview | netstandard2.0 |
