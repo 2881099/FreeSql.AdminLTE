@@ -6,9 +6,9 @@
 | FreeSql.AdminLTE.Tools | netcoreapp2.1 |
 | FreeSql.AdminLTE.Preview | netstandard2.0 |
 
-三个包产生的 AdminLTE 功能几乎一样，都是根据实体类、导航关系生成默认的繁琐的后台管理功能，以下介绍他们各自的使用场景。
+三个包产生的 AdminLTE 功能几乎一样，都是根据实体类、导航关系生成默认的繁琐的后台管理功能。
 
-# 生成条件
+生成条件：
 
 - 实体类的注释（请开启项目XML文档）；
 - 实体类的导航属性配置（可生成繁琐的常用后台管理功能）。
