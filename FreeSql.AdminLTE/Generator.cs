@@ -818,7 +818,7 @@ namespace {_options.ControllerNameSpace}.Controllers
 			<form id=""form_list"" action=""./del"" method=""post"">
 				@Html.AntiForgeryToken()
 				<input type=""hidden"" name=""__callback"" value=""del_callback""/>
-				<table id=""GridView1"" cellspacing=""0"" rules=""all"" border=""1"" style=""border-collapse:collapse;"" class=""table table-bordered table-hover"">
+				<table id=""GridView1"" cellspacing=""0"" rules=""all"" border=""1"" style=""border-collapse:collapse;"" class=""table table-bordered table-hover text-nowrap"">
 					<tr>
 						<th scope=""col"" style=""width:2%;""><input type=""checkbox"" onclick=""$('#GridView1 tbody tr').each(function (idx, el) {{ var chk = $(el).find('td:first input[type=\'checkbox\']')[0]; if (chk) chk.checked = !chk.checked; }});"" /></th>
 {listTh.ToString()}
