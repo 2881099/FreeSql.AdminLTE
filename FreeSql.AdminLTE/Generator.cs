@@ -12,8 +12,8 @@ namespace FreeSql.AdminLTE
 {
     public class Generator : IDisposable
     {
+        public IFreeSql Orm;
         string _dbname;
-        IFreeSql _fsql;
         GeneratorOptions _options;
         public static Func<Stream> HtmStream { get; set; } = () => typeof(Generator).GetTypeInfo().Assembly
             .GetManifestResourceStream("FreeSql.AdminLTE.htm.zip");
@@ -21,7 +21,7 @@ namespace FreeSql.AdminLTE
         public Generator(GeneratorOptions options)
         {
             _dbname = AppDomain.CurrentDomain.BaseDirectory + "freesql_adminlte_test.db";
-            _fsql = new FreeSqlBuilder().UseConnectionString(DataType.Sqlite, $"data source={_dbname};max pool size=1").Build();
+            Orm = new FreeSqlBuilder().UseConnectionString(DataType.Sqlite, $"data source={_dbname};max pool size=1").Build();
             _options = options;
         }
         ~Generator() => Dispose();
@@ -30,7 +30,7 @@ namespace FreeSql.AdminLTE
         {
             if (_isdisposed) return;
             _isdisposed = true;
-            _fsql?.Dispose();
+            Orm?.Dispose();
             try { File.Delete(_dbname); } catch { }
         }
 
@@ -71,7 +71,7 @@ namespace FreeSql.AdminLTE
             foreach (var entityType in entityTypes)
             {
                 
-                var tb = _fsql.CodeFirst.GetTableByEntity(entityType);
+                var tb = Orm.CodeFirst.GetTableByEntity(entityType);
                 if (tb == null) throw new Exception($"类型 {entityType.FullName} 错误，不能执行生成操作");
 
                 if (!string.IsNullOrEmpty(entityType.Namespace) && !ns.ContainsKey(entityType.Namespace))
@@ -479,7 +479,7 @@ public static class GlobalExtensions
         /// <returns></returns>
         public string GetControllerCode(Type entityType)
         {
-            var tb = _fsql.CodeFirst.GetTableByEntity(entityType);
+            var tb = Orm.CodeFirst.GetTableByEntity(entityType);
             if (tb == null) throw new Exception($"类型 {entityType.FullName} 错误，不能执行生成操作");
 
             var ns = new Dictionary<string, bool>();
@@ -533,7 +533,7 @@ public static class GlobalExtensions
                     case TableRefType.ManyToOne:
                     case TableRefType.OneToOne:
                         listInclude += $".Include(a => a.{prop.Key})";
-                        var treftb = _fsql.CodeFirst.GetTableByEntity(tref.RefEntityType);
+                        var treftb = Orm.CodeFirst.GetTableByEntity(tref.RefEntityType);
                         foreach (var col in treftb.Columns)
                         {
                             if (treftb.ColumnsByCsIgnore.ContainsKey(col.Value.CsName)) continue;
@@ -724,7 +724,7 @@ namespace {_options.ControllerNameSpace}.Controllers
         /// <returns></returns>
         public string GetViewListCode(Type entityType)
         {
-            var tb = _fsql.CodeFirst.GetTableByEntity(entityType);
+            var tb = Orm.CodeFirst.GetTableByEntity(entityType);
             if (tb == null) throw new Exception($"类型 {entityType.FullName} 错误，不能执行生成操作");
 
             #region THead Td
@@ -751,7 +751,7 @@ namespace {_options.ControllerNameSpace}.Controllers
                 {
                     case TableRefType.ManyToOne:
                     case TableRefType.OneToOne:
-                        var tbref = _fsql.CodeFirst.GetTableByEntity(tref.RefEntityType);
+                        var tbref = Orm.CodeFirst.GetTableByEntity(tref.RefEntityType);
                         var tbrefName = tbref.Columns.Values.Where(a => a.CsType == typeof(string)).FirstOrDefault()?.CsName;
                         if (!string.IsNullOrEmpty(tbrefName)) tbrefName = $"?.{tbrefName}";
                         listTh.Append($"\r\n						<th scope=\"col\">{string.Join(",", tref.Columns.Select(a => a.Comment ?? a.CsName))}</th>");
@@ -782,7 +782,7 @@ namespace {_options.ControllerNameSpace}.Controllers
                 var tref = tb.GetTableRef(prop.Name, false);
                 if (tref == null) continue;
 
-                var tbref = _fsql.CodeFirst.GetTableByEntity(tref.RefEntityType);
+                var tbref = Orm.CodeFirst.GetTableByEntity(tref.RefEntityType);
                 var tbrefName = tbref.Columns.Values.Where(a => a.CsType == typeof(string)).FirstOrDefault()?.CsName;
                 if (!string.IsNullOrEmpty(tbrefName)) tbrefName = $".{tbrefName}";
 
@@ -872,7 +872,7 @@ namespace {_options.ControllerNameSpace}.Controllers
         /// <returns></returns>
         public string GetViewEditCode(Type entityType)
         {
-            var tb = _fsql.CodeFirst.GetTableByEntity(entityType);
+            var tb = Orm.CodeFirst.GetTableByEntity(entityType);
             if (tb == null) throw new Exception($"类型 {entityType.FullName} 错误，不能执行生成操作");
 
             #region 编辑项
@@ -976,7 +976,7 @@ namespace {_options.ControllerNameSpace}.Controllers
                 var tref = tb.GetTableRef(prop.Name, false);
                 if (tref == null) continue;
 
-                var tbref = _fsql.CodeFirst.GetTableByEntity(tref.RefEntityType);
+                var tbref = Orm.CodeFirst.GetTableByEntity(tref.RefEntityType);
                 var tbrefName = tbref.Columns.Values.Where(a => a.CsType == typeof(string)).FirstOrDefault()?.CsName;
                 if (!string.IsNullOrEmpty(tbrefName)) tbrefName = $".{tbrefName}";
 

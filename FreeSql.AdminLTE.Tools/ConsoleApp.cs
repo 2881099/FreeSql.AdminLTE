@@ -16,9 +16,14 @@ namespace FreeSql.AdminLTE.Tools
         public GeneratorOptions ArgsOptions = new GeneratorOptions();
         public string ArgsFind;
         public string ArgsOutput;
+        public string ArgsCode;
         public bool ArgsFirst;
 
         public ConsoleApp(string[] args, ManualResetEvent wait) {
+
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            Console.OutputEncoding = Encoding.GetEncoding("GB2312");
+            Console.InputEncoding = Encoding.GetEncoding("GB2312");
 
             //var ntjson = Assembly.LoadFile(@"C:\Users\28810\Desktop\testfreesql\bin\Debug\netcoreapp2.2\publish\testfreesql.dll");
 
@@ -57,12 +62,17 @@ new Colorful.Formatter("https://github.com/2881099/FreeSql", Color.DeepSkyBlue))
         -ControllerRouteBase   控制器请求路径前辍（默认：/AdminLTE/）
         -ControllerBase        控制器基类（默认：Controller）
 
-        -First             是否生成 ApiResult.cs、index.html、htm 静态资源（首次生成）
+        -Code                  生成前执行代码，解决FluentAPI设置的特性无法读取（gen.Orm）
+        -First                 是否生成 ApiResult.cs、index.html、htm 静态资源（首次生成）
         -Output                输出路径（默认：当前目录）
 
   # 生成到其他目录 #
 
     > {3} {4} MyTest\.Model\..+ -Output d:/test
+
+  # 生成BaseEntity实体类
+
+    > {3} {4} MyTest\.Model\..+ -Code ""entityTypes.FirstOrDefault()?.Assembly.GetType(\""FreeSql.BaseEntity\"").GetMethod(\""Initialization\"").Invoke(null, new object[] {{ gen.Orm }});""
 
 ", Color.SlateGray,
 new Colorful.Formatter("基于 .NETCore 2.1 环境，在控制台当前目录的项目下，根据实体类生成 AdminLTE 后台管理功能的相关文件。", Color.SlateGray),
@@ -94,6 +104,10 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
                         a++;
                         break;
 
+                    case "-Code":
+                        ArgsCode = args[a + 1];
+                        a++;
+                        break;
                     case "-First":
                         ArgsFirst = true;
                         break;
@@ -114,6 +128,17 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
             {
                 throw new ArgumentException($"-Find 参数值不是有效的正式表达式，当前值：{ArgsFind}");
             }
+
+            Console.WriteFormatted($@"
+-Find={ArgsFind}
+-ControllerNameSpace={ArgsOptions.ControllerNameSpace}
+-ControllerRouteBase={ArgsOptions.ControllerRouteBase}
+-ControllerBase={ArgsOptions.ControllerBase}
+-Code={ArgsCode}
+-First={ArgsFirst}
+-Output={ArgsOutput}
+
+", Color.DarkGray);
 
             var dllFiles = new List<string>();
             Console.WriteFormatted("正在发布当前项目(dotnet publish -r linux-x64) …\r\n", Color.DarkGreen);
@@ -150,7 +175,8 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
 
             var currentCsproj = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.csproj").FirstOrDefault();
             var currentVersion = "netcoreapp2.1";
-            if (!string.IsNullOrEmpty(currentCsproj)) currentVersion = Regex.Match(File.ReadAllText(currentCsproj), @"netcoreapp\d+\.\d+")?.Groups[0].Value ?? currentVersion;
+            if (!string.IsNullOrEmpty(currentCsproj)) currentVersion = Regex.Match(File.ReadAllText(currentCsproj), @"netcoreapp\d+\.\d+")?.Groups[0].Value;
+            if (string.IsNullOrEmpty(currentVersion)) currentVersion = "netcoreapp2.1";
             writeTmpFile("temp_freesql_adminlte_tools.csproj", $@"<Project Sdk=""Microsoft.NET.Sdk"">
 
   <PropertyGroup>
@@ -159,7 +185,7 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include=""FreeSql.AdminLTE"" Version=""1.0.1"" />
+    <PackageReference Include=""FreeSql.AdminLTE"" Version=""1.0.2"" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include=""{currentCsproj}"" />
@@ -168,6 +194,7 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
 ");
             writeTmpFile("Program.cs", $@"using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -199,9 +226,10 @@ namespace temp_freesql_adminlte_tools
             {{
                 ControllerBase = @""{ArgsOptions.ControllerBase.Replace("\"", "\"\"")}"",
                 ControllerNameSpace = @""{ArgsOptions.ControllerNameSpace.Replace("\"", "\"\"")}"",
-                 ControllerRouteBase = @""{ArgsOptions.ControllerRouteBase.Replace("\"", "\"\"")}""
+                ControllerRouteBase = @""{ArgsOptions.ControllerRouteBase.Replace("\"", "\"\"")}""
             }}))
             {{
+                {(string.IsNullOrEmpty(ArgsCode) ? "" : $"{ArgsCode}")}
                 gen.TraceLog = log => Console.WriteLine(log);
                 gen.Build(@""{ArgsOutput.Replace("\"", "\"\"")}"", entityTypes.ToArray(), {(ArgsFirst ? "true" : "false")});
             }}
