@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
         <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
-		<Version>1.0.3</Version>
+		<Version>1.0.4</Version>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Authors>YeXiangQin</Authors>
 		<Description>根据 FreeSql 实体类配置、导航关系配置，快速生成基于 MVC + Razor + AdminLTE 的后台管理系统的增删查改代码【支持二次开发】。</Description>
@@ -19,8 +19,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-        <PackageReference Include="FreeSql.DbContext" Version="0.9.7" />
-        <PackageReference Include="FreeSql.Provider.Sqlite" Version="0.9.7" />
+        <PackageReference Include="FreeSql.DbContext" Version="0.10.13" />
+        <PackageReference Include="FreeSql.Provider.Sqlite" Version="0.10.13" />
 	</ItemGroup>
 
 </Project>
