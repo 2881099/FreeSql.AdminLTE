@@ -740,7 +740,7 @@ namespace {_options.ControllerNameSpace}.Controllers
                 {
                     listTh.Append($"\r\n						<th scope=\"col\">{(col.Comment ?? col.CsName)}{(col.Attribute.IsIdentity ? "(自增)" : "")}</th>");
                     listTd.Append($"\r\n								<td>@item.{col.CsName}</td>");
-                    dicCol.Add(col.CsName, true);
+                    if (dicCol.ContainsKey(col.CsName) == false) dicCol.Add(col.CsName, true);
                 }
             }
             foreach (var prop in tb.Properties.Values)
@@ -757,7 +757,7 @@ namespace {_options.ControllerNameSpace}.Controllers
                         if (!string.IsNullOrEmpty(tbrefName)) tbrefName = $"?.{tbrefName}";
                         listTh.Append($"\r\n						<th scope=\"col\">{string.Join(",", tref.Columns.Select(a => a.Comment ?? a.CsName))}</th>");
                         listTd.Append($"\r\n								<td>[{string.Join(",", tref.Columns.Select(a => $"@item.{a.CsName}"))}] @item.{prop.Name}{tbrefName}</td>");
-                        foreach (var col in tref.Columns) dicCol.Add(col.CsName, true);
+                        foreach (var col in tref.Columns) if (dicCol.ContainsKey(col.CsName) == false) dicCol.Add(col.CsName, true);
                         break;
                 }
             }
