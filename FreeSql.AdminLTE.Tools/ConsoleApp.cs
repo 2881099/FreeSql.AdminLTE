@@ -193,7 +193,7 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include=""FreeSql.AdminLTE"" Version=""1.0.7"" />
+    <PackageReference Include=""FreeSql.AdminLTE"" Version=""1.0.8"" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include=""{currentCsproj}"" />

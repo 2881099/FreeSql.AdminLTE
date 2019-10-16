@@ -967,7 +967,7 @@ namespace {_options.ControllerNameSpace}.Controllers
 						}}");
                 else
                     editTrAppend(col);
-                dicCol.Add(col.CsName, true);
+                if (dicCol.ContainsKey(col.CsName) == false) dicCol.Add(col.CsName, true);
             }
 
             var selectCode = "";
@@ -1016,7 +1016,7 @@ namespace {_options.ControllerNameSpace}.Controllers
 								</select>
                             </td>
 					    </tr>");
-                        foreach (var col in tref.Columns) dicCol.Add(col.CsName, true);
+                        foreach (var col in tref.Columns) if (dicCol.ContainsKey(col.CsName) == false) dicCol.Add(col.CsName, true);
                         break;
                     case TableRefType.ManyToMany:
                         editTrMany.Append($@"
