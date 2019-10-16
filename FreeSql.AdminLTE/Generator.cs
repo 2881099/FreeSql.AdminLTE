@@ -1029,7 +1029,7 @@ namespace {_options.ControllerNameSpace}.Controllers
 							</td>
 						</tr>");
                         editInitSelectUI.Append($@"item.mn_{prop.Name} = @Html.Json(item.{prop.Name});
-			for (var a = 0; a < item.mn_{prop.Name}.length; a++) $(form.mn_{prop.Name}_{tref.RefColumns[0].CsName}).find('option[value=""{{0}}""]'.format(item.mn_{prop.Name}[a].{tref.RefColumns[0].CsName})).attr('selected', 'selected');");
+			for (var a = 0; a @Html.Raw('<') item.mn_{prop.Name}.length; a++) $(form.mn_{prop.Name}_{tref.RefColumns[0].CsName}).find('option[value=""{{0}}""]'.format(item.mn_{prop.Name}[a].{tref.RefColumns[0].CsName})).attr('selected', 'selected');");
                         break;
                 }
             }
@@ -1086,6 +1086,7 @@ namespace {_options.ControllerNameSpace}.Controllers
 			fillForm(form, item);{editInitSelectUI}
 			</text>
 		}}
+
 		top.mainViewInit();
 	}})();
 </script>";
