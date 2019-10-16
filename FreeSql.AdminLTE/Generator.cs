@@ -647,11 +647,12 @@ public static class GlobalExtensions
         [ValidateAntiForgeryToken]
         async public Task<ApiResult> _Edit({string.Join(", ", tb.Columns.Values.Where(a => !a.Attribute.IsIgnore).Select(col => $"[FromForm] {col.CsType.GetGenericName()} {col.CsName}"))}{editFromForm})
         {{
-            var item = new {entityType.GetClassName()}();
-            {string.Join("\r\n            ", tb.Primarys.Select(col => $"item.{col.CsName} = {col.CsName};"))}
+            //var item = new {entityType.GetClassName()}();
+            {string.Join("\r\n            ", tb.Primarys.Select(col => $"//item.{col.CsName} = {col.CsName};"))}
             using (var ctx = fsql.CreateDbContext())
             {{
-                ctx.Attach(item);
+                //ctx.Attach(item);
+                var item = await ctx.Set<{entityType.GetClassName()}>().Where(a => {string.Join(" && ", tb.Primarys.Select(pk => $"a.{pk.CsName} == {pk.CsName}"))}).FirstAsync();
                 {string.Join("\r\n                ", tb.Columns.Values.Where(a => !a.Attribute.IsPrimary && !a.Attribute.IsIgnore).Select(col => $"item.{col.CsName} = {col.CsName};"))}
                 await ctx.UpdateAsync(item);{editFromFormEdit}
                 var affrows = await ctx.SaveChangesAsync();

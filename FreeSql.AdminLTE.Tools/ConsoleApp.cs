@@ -80,7 +80,7 @@ new Colorful.Formatter("https://github.com/2881099/FreeSql", Color.DeepSkyBlue))
 
   # 生成BaseEntity实体类
 
-    > {3} {4} MyTest\.Model\..+ -Code ""entityTypes.FirstOrDefault()?.Assembly.GetType(\""FreeSql.BaseEntity\"").GetMethod(\""Initialization\"").Invoke(null, new object[] {{ gen.Orm }});""
+    > {3} {4} MyTest\.Model\..+ -Code ""entityTypes.FirstOrDefault()?.Assembly.GetType(\""FreeSql.BaseEntity\"").GetMethod(\""Initialization\"").Invoke(null, new object[] { gen.Orm });""
 
 ", Color.SlateGray,
 new Colorful.Formatter("基于 .NETCore 2.1 环境，在控制台当前目录的项目下，根据实体类生成 AdminLTE 后台管理功能的相关文件。", Color.SlateGray),
@@ -193,7 +193,7 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include=""FreeSql.AdminLTE"" Version=""1.0.5"" />
+    <PackageReference Include=""FreeSql.AdminLTE"" Version=""1.0.7"" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include=""{currentCsproj}"" />

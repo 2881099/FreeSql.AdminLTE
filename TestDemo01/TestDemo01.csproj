@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FreeSql.Provider.Sqlite" Version="0.8.8" />
+        <PackageReference Include="FreeSql.Provider.Sqlite" Version="0.10.14" />
         <PackageReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
