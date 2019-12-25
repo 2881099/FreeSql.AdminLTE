@@ -22,7 +22,7 @@ namespace TestDemo01
                 .UseMonitorCommand(cmd => Trace.WriteLine(cmd.CommandText))
                 .Build();
 
-
+            Fsql.Aop.CurdBefore += (_, e) => Trace.WriteLine(e.Sql);
         }
 
         public IConfiguration Configuration { get; }
@@ -31,18 +31,17 @@ namespace TestDemo01
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddMvc();
-            services.AddSingleton<IFreeSql>(Fsql);
+            services.AddControllersWithViews();
+            services.AddSingleton(Fsql);
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
             app.UseHttpMethodOverride(new HttpMethodOverrideOptions { FormFieldName = "X-Http-Method-Override" });
             app.UseDeveloperExceptionPage();
-            app.UseMvc();
+
+            app.UseRouting();
+            app.UseEndpoints(a => a.MapControllers());
 
             //可以配置子目录访问，如：/testadmin/
             app.UseFreeAdminLtePreview("/",
