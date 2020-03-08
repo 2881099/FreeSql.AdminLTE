@@ -11,12 +11,12 @@
     <Description>快速创建 .NETCore + MVC + Razor + AdminLTE 后台管理项目，安装：dotnet tool install -g FreeSql.AdminLTE.Tools</Description>
     <PackageProjectUrl>https://github.com/2881099/FreeSql</PackageProjectUrl>
     <RepositoryUrl>https://github.com/2881099/FreeSql</RepositoryUrl>
-    <Version>1.0.11</Version>
+    <Version>1.2.1</Version>
     <PackageTags>生成器,.net,core,AdminLTE</PackageTags>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Colorful.Console" Version="1.2.9" />
+    <PackageReference Include="Colorful.Console" Version="1.2.10" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>

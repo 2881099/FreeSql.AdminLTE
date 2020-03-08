@@ -586,6 +586,13 @@ public static class GlobalExtensions
                             editFromForm += $", [FromForm] {tref.RefColumns[0].CsType.GetGenericName()}[] {mnNs}";
                             editFromFormAdd += $@"
                 //关联 {tref.RefEntityType.GetClassName()}
+                await ctx.SaveManyAsync(item, ""{prop.Name}"");";
+                            editFromFormEdit += $@"
+                //关联 {tref.RefEntityType.GetClassName()}
+                await ctx.SaveManyAsync(item, ""{prop.Name}"");";
+                            /*
+                            editFromFormAdd += $@"
+                //关联 {tref.RefEntityType.GetClassName()}
                 var mn_{prop.Name} = {mnNs}.Select((mn, idx) => new {tref.RefMiddleEntityType.GetClassName()} {{ {tref.MiddleColumns[tref.Columns.Count].CsName} = mn, {string.Join(", ", tref.Columns.Select((a, idx) => $"{tref.MiddleColumns[idx].CsName} = item.{a.CsName}"))} }}).ToArray();
                 await ctx.AddRangeAsync(mn_{prop.Name});";
                             editFromFormEdit += $@"
@@ -603,6 +610,7 @@ public static class GlobalExtensions
                     var mn_{prop.Name} = {mnNs}_list.Select((mn, idx) => new {tref.RefMiddleEntityType.GetClassName()} {{ {tref.MiddleColumns[tref.Columns.Count].CsName} = mn, {string.Join(", ", tref.Columns.Select((a, idx) => $"{tref.MiddleColumns[idx].CsName} = item.{a.CsName}"))} }}).ToArray();
                     await ctx.AddRangeAsync(mn_{prop.Name});
                 }}";
+                               */
                         }
                         //else
                         //{

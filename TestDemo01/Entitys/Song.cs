@@ -33,7 +33,7 @@ namespace TestDemo01.Entitys
         /// </summary>
         public string Url { get; set; }
 
-        [JsonIgnore] public virtual ICollection<Tag> Tags { get; set; }
+        [JsonIgnore] public ICollection<Tag> Tags { get; set; }
 
         [Column(IsVersion = true)]
         public long versionRow { get; set; }
@@ -41,10 +41,10 @@ namespace TestDemo01.Entitys
     public class Song_tag
     {
         public int Song_id { get; set; }
-        [JsonIgnore] public virtual Song Song { get; set; }
+        [JsonIgnore] public Song Song { get; set; }
 
         public int Tag_id { get; set; }
-        [JsonIgnore] public virtual Tag Tag { get; set; }
+        [JsonIgnore] public Tag Tag { get; set; }
     }
 
     public class Tag
@@ -59,7 +59,7 @@ namespace TestDemo01.Entitys
         /// 父id
         /// </summary>
         public int? Parent_id { get; set; }
-        [JsonIgnore] public virtual Tag Parent { get; set; }
+        [JsonIgnore] public Tag Parent { get; set; }
 
         /// <summary>
         /// 测试字段
@@ -71,8 +71,8 @@ namespace TestDemo01.Entitys
         /// </summary>
         public string Name { get; set; }
 
-        [JsonIgnore] public virtual ICollection<Song> Songs { get; set; }
-        [JsonIgnore] public virtual ICollection<Tag> Tags { get; set; }
+        [JsonIgnore] public ICollection<Song> Songs { get; set; }
+        [JsonIgnore] public ICollection<Tag> Tags { get; set; }
     }
 
 
@@ -103,6 +103,6 @@ namespace TestDemo01.Entitys
         /// 用户id
         /// </summary>
         public int User_id { get; set; }
-        [JsonIgnore] public virtual User User { get; set; }
+        [JsonIgnore] public User User { get; set; }
     }
 }
