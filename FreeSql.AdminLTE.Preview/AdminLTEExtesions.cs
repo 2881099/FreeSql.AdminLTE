@@ -47,7 +47,7 @@ namespace FreeSql
 						var sb = new StringBuilder();
 						sb.AppendLine(@"<ul class=""treeview-menu"">");
 						foreach (var et in dicEntityTypes) {
-							sb.AppendLine($@"<li><a href=""{requestPathBase}{et.Key}/""><i class=""fa fa-circle-o""></i>{et.Key}</a></li>");
+							sb.AppendLine($@"<li><a href=""{requestPathBase}{et.Key}/""><i class=""fa fa-circle-o""></i>{fsql.CodeFirst.GetTableByEntity(et.Value).Comment.IsNullOrEmtpty(et.Key)}</a></li>");
 						}
 						sb.AppendLine(@"</ul>");
 						await res.WriteAsync(Views.Index.Replace(@"<ul class=""treeview-menu""></ul>", sb.ToString()));
@@ -71,5 +71,7 @@ namespace FreeSql
 
 			return app;
 		}
+
+		public static string IsNullOrEmtpty(this string that, string newvalue) => string.IsNullOrEmpty(that) ? newvalue : that;
 	}
 }

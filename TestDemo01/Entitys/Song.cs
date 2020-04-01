@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace TestDemo01.Entitys
 {
+    /// <summary>
+    /// 音乐
+    /// </summary>
     public class Song
     {
         /// <summary>
@@ -47,6 +50,9 @@ namespace TestDemo01.Entitys
         [JsonIgnore] public Tag Tag { get; set; }
     }
 
+    /// <summary>
+    /// 标签
+    /// </summary>
     public class Tag
     {
         /// <summary>
@@ -76,6 +82,9 @@ namespace TestDemo01.Entitys
     }
 
 
+    /// <summary>
+    /// 用户管理
+    /// </summary>
     public class User
     {
         [Column(IsIdentity = true)]
@@ -89,6 +98,9 @@ namespace TestDemo01.Entitys
         [JsonIgnore] public ICollection<UserImage> UserImages { get; set; }
     }
 
+    /// <summary>
+    /// 用户图片
+    /// </summary>
     public class UserImage
     {
         [Column(IsIdentity = true)]

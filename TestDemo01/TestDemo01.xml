@@ -4,6 +4,11 @@
         <name>TestDemo01</name>
     </assembly>
     <members>
+        <member name="T:TestDemo01.Entitys.Song">
+            <summary>
+            音乐
+            </summary>
+        </member>
         <member name="P:TestDemo01.Entitys.Song.Id">
             <summary>
             主键
@@ -29,6 +34,11 @@
             地址
             </summary>
         </member>
+        <member name="T:TestDemo01.Entitys.Tag">
+            <summary>
+            标签
+            </summary>
+        </member>
         <member name="P:TestDemo01.Entitys.Tag.Id">
             <summary>
             主键
@@ -49,9 +59,19 @@
             名字
             </summary>
         </member>
+        <member name="T:TestDemo01.Entitys.User">
+            <summary>
+            用户管理
+            </summary>
+        </member>
         <member name="P:TestDemo01.Entitys.User.Name">
             <summary>
             用户名
+            </summary>
+        </member>
+        <member name="T:TestDemo01.Entitys.UserImage">
+            <summary>
+            用户图片
             </summary>
         </member>
         <member name="P:TestDemo01.Entitys.UserImage.Url">

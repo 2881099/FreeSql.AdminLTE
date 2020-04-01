@@ -296,7 +296,7 @@ public static class GlobalExtensions
 
 					<li class=""treeview active"">
 						<a href=""#""><i class=""fa fa-laptop""></i><span>通用管理</span><i class=""fa fa-angle-left pull-right""></i></a>
-						<ul class=""treeview-menu"">{string.Join("\r\n", entityTypes.Select(et => $@"<li><a href=""{_options.ControllerRouteBase}{et.Name}/""><i class=""fa fa-circle-o""></i>{et.Name}</a></li>"))}</ul>
+						<ul class=""treeview-menu"">{string.Join("\r\n", entityTypes.Select(et => $@"<li><a href=""{_options.ControllerRouteBase}{et.Name}/""><i class=""fa fa-circle-o""></i>{Orm.CodeFirst.GetTableByEntity(et).Comment.IsNullOrEmtpty(et.Name)}</a></li>"))}</ul>
 					</li>
 
 				</ul>
@@ -799,11 +799,11 @@ namespace {_options.ControllerNameSpace}.Controllers
                 {
                     case TableRefType.ManyToOne:
                         selectCode += $"\r\n	var fk_{prop.Name}s = fsql.Select<{tref.RefEntityType.GetClassName()}>().ToList();";
-                        fscCode += $"\r\n			{{ name: '{prop.Name}', field: '{string.Join(",", tref.Columns.Select(a => a.CsName))}', text: @Html.Json(fk_{prop.Name}s.Select(a => a{tbrefName})), value: @Html.Json(fk_{prop.Name}s.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
+                        fscCode += $"\r\n			{{ name: '{tbref.Comment.IsNullOrEmtpty(prop.Name)}', field: '{string.Join(",", tref.Columns.Select(a => a.CsName))}', text: @Html.Json(fk_{prop.Name}s.Select(a => a{tbrefName})), value: @Html.Json(fk_{prop.Name}s.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
                         break;
                     case TableRefType.ManyToMany:
                         selectCode += $"\r\n	var mn_{prop.Name} = fsql.Select<{tref.RefEntityType.GetClassName()}>().ToList();";
-                        fscCode += $"\r\n			{{ name: '{prop.Name}', field: '{string.Join(",", tref.RefColumns.Select(a => $"mn_{prop.Name}_{a.CsName}"))}', text: @Html.Json(mn_{prop.Name}.Select(a => a{tbrefName})), value: @Html.Json(mn_{prop.Name}.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
+                        fscCode += $"\r\n			{{ name: '{tbref.Comment.IsNullOrEmtpty(prop.Name)}', field: '{string.Join(",", tref.RefColumns.Select(a => $"mn_{prop.Name}_{a.CsName}"))}', text: @Html.Json(mn_{prop.Name}.Select(a => a{tbrefName})), value: @Html.Json(mn_{prop.Name}.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
                         break;
                 }
             }
@@ -1128,5 +1128,7 @@ namespace {_options.ControllerNameSpace}.Controllers
 
             return ret + (that.IsNullableType() ? "?" : "");
         }
+
+        public static string IsNullOrEmtpty(this string that, string newvalue) => string.IsNullOrEmpty(that) ? newvalue : that;
     }
 }
