@@ -3,8 +3,8 @@
 | 项目 | 版本 |
 | -- | -- |
 | FreeSql.AdminLTE | netstandard2.0、net45 |
-| FreeSql.AdminLTE.Tools | netcoreapp2.1 |
-| FreeSql.AdminLTE.Preview | netstandard2.0 |
+| FreeSql.AdminLTE.Tools | netcoreapp3.1 |
+| FreeSql.AdminLTE.Preview | netcoreapp3.1 |
 
 三个包产生的 AdminLTE 功能几乎一样，都是根据实体类、导航关系生成默认的繁琐的后台管理功能。
 
