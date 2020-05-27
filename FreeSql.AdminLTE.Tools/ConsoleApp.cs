@@ -182,9 +182,9 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
             };
 
             var currentCsproj = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.csproj").FirstOrDefault();
-            var currentVersion = "netcoreapp2.1";
+            var currentVersion = "netcoreapp3.1";
             if (!string.IsNullOrEmpty(currentCsproj)) currentVersion = Regex.Match(File.ReadAllText(currentCsproj), @"netcoreapp\d+\.\d+")?.Groups[0].Value;
-            if (string.IsNullOrEmpty(currentVersion)) currentVersion = "netcoreapp2.1";
+            if (string.IsNullOrEmpty(currentVersion)) currentVersion = "netcoreapp3.1";
             writeTmpFile("temp_freesql_adminlte_tools.csproj", $@"<Project Sdk=""Microsoft.NET.Sdk"">
 
   <PropertyGroup>
@@ -193,8 +193,8 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include=""FreeSql.Provider.Sqlite"" Version=""1.4.0"" />
-    <PackageReference Include=""FreeSql.AdminLTE"" Version=""1.4.0"" />
+    <PackageReference Include=""FreeSql.Provider.Sqlite"" Version=""1.5.0"" />
+    <PackageReference Include=""FreeSql.AdminLTE"" Version=""1.5.0"" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include=""{currentCsproj}"" />

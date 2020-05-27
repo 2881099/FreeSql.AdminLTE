@@ -58,6 +58,7 @@ namespace FreeSql
 						if (await Restful.Use(context, fsql, restfulRequestPath, dicEntityTypes)) return;
 					}
 					else if (reqPath.StartsWith(requestPathBase)) {
+						if (reqPath == "/favicon.ico/") return;
 						//前端UI
 						if (await Admin.Use(context, fsql, requestPathBase, dicEntityTypes)) return;
 					}
