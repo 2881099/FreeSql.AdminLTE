@@ -1,4 +1,6 @@
-这是 [FreeSql](https://github.com/2881099/FreeSql) 衍生出来的功能包，基于 AdminLTE 前端框架提高生产效率（QQ群：4336577）
+这是 [FreeSql](https://github.com/2881099/FreeSql) 衍生出来的功能包，基于 AdminLTE 前端框架提高生产效率
+
+QQ群：4336577(已满)、8578575(在线)、52508226(在线)
 
 | 项目 | 版本 |
 | -- | -- |
@@ -24,14 +26,14 @@
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-	services.AddSingleton<IFreeSql>(fsql);
+  services.AddSingleton<IFreeSql>(fsql);
 }
 
 public void Configure(IApplicationBuilder app)
 {
-	app.UseFreeAdminLtePreview("/testadmin/",
-		typeof(TestDemo01.Entitys.Song),
-		typeof(TestDemo01.Entitys.Tag));
+  app.UseFreeAdminLtePreview("/testadmin/",
+    typeof(TestDemo01.Entitys.Song),
+    typeof(TestDemo01.Entitys.Tag));
 }
 ```
 
@@ -50,7 +52,7 @@ public void Configure(IApplicationBuilder app)
 ```csharp
 using (var gen = new FreeSql.AdminLTE.Generator(new GeneratorOptions()))
 {
-    gen.Build("d:/test/", new[] { typeof(TestDemo01.Entitys.Song) }, false);
+  gen.Build("d:/test/", new[] { typeof(TestDemo01.Entitys.Song) }, false);
 }
 ```
 

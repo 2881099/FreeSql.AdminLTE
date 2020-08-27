@@ -48,7 +48,8 @@ namespace TestDemo01
                 typeof(TestDemo01.Entitys.Song),
                 typeof(TestDemo01.Entitys.Tag),
                 typeof(TestDemo01.Entitys.User),
-                typeof(TestDemo01.Entitys.UserImage));
+                typeof(TestDemo01.Entitys.UserImage)
+            );
         }
     }
 

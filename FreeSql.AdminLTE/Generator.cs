@@ -312,8 +312,10 @@ public static class GlobalExtensions
 					<!-- Your Page Content Here-->
 					<h1>FreeSql.AdminLTE 中件间</h1>
 					<h3>
-这是 FreeSql 衍生出来的 .NETCore MVC 中间件扩展包，基于 AdminLTE 前端框架动态产生 FreeSql 实体的增删查改界面（QQ群：4336577）。
+.NETCore MVC 中间件扩展包，基于 AdminLTE 前端框架动态产生 FreeSql 实体的增删查改界面。
 					</h3>
+					<h2>&nbsp;</h2>
+					<h2>QQ群：4336577(已满)、8578575(在线)、52508226(在线)</h2>
 					<h2>&nbsp;</h2>
 					<h2>开源地址：<a href='https://github.com/2881099/FreeSql' target='_blank'>https://github.com/2881099/FreeSql</a><h2>
 				</div>
