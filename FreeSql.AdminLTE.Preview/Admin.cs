@@ -24,7 +24,7 @@ namespace FreeSql {
 		static ConcurrentDictionary<string, bool> newTpl = new ConcurrentDictionary<string, bool>();
 
 		static void MakeTemplateFile(string tplName, string tplCode) {
-			var tplPath = _tplViewDir + $@"\{tplName}";
+			var tplPath = _tplViewDir + $@"{tplName}";
 			if (newTpl.ContainsKey(tplPath) == false) {
 				var lck = newTplLock.GetOrAdd(tplPath, ent => new object());
 				lock (lck) {

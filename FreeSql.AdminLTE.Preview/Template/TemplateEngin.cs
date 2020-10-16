@@ -68,6 +68,7 @@ namespace FreeSql.Template
 			if (filename[0] == '/' || string.IsNullOrEmpty(refererFilename)) refererFilename = _viewDir;
 			//else refererFilename = Path.GetDirectoryName(refererFilename);
 			string filename2 = Utils.TranslateUrl(filename, refererFilename);
+			Console.WriteLine(filename2);
 			ITemplateOutput tpl;
 			if (_cache.TryGetValue(filename2, out tpl) == false) {
 				string tplcode = File.Exists(filename2) == false ? string.Concat("文件不存在 ", filename) : Utils.ReadTextFile(filename2);
@@ -627,7 +628,11 @@ return rTn;");
 				return TranslateUrl(url, null);
 			}
 			public static string TranslateUrl(string url, string baseDir) {
-				if (string.IsNullOrEmpty(baseDir)) baseDir = AppContext.BaseDirectory + "/";
+				if (string.IsNullOrEmpty(baseDir))
+				{
+					baseDir = AppContext.BaseDirectory + "/";
+					if (url.StartsWith(AppContext.BaseDirectory)) url = url.Substring(AppContext.BaseDirectory.Length).TrimStart('/');
+				}
 				if (string.IsNullOrEmpty(url)) return Path.GetDirectoryName(baseDir);
 				if (url.StartsWith("~/")) url = url.Substring(1);
 				if (url.StartsWith("/")) return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(baseDir), url.TrimStart('/')));

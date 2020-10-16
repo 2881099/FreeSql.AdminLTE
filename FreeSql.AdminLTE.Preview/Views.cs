@@ -12,6 +12,8 @@ object getitem = gethash;
 var getlistfilter = getlistFilter as Dictionary<string, (FreeSql.Internal.Model.TableRef, string, string, Dictionary<string, object>, List<Dictionary<string, object>>)>;
 var getlistmanyed = getlistManyed as Dictionary<string, IEnumerable<string>>;
 
+Func<FreeSql.Internal.Model.ColumnInfo, string> getComment = col => string.IsNullOrEmpty(col.Comment) ? col.CsName : col.Comment;
+
 var sb5 = new StringBuilder();
 %}
 
@@ -38,7 +40,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 
 	{% if (manyToOneFilter.Item1 != null) { %}
 		<tr @if=""manyToOneFilter.Item1.RefEntityType == tb.Type"">
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td id=""{#colVal.CsName}_td""></td>
 			{%
 			sb5.AppendFormat(@""
@@ -52,7 +54,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 			%}
 		</tr>
 		<tr @else="""">
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<select name=""{#colVal.CsName}"">
 					<option value="""">------ 请选择 ------</option>
@@ -63,7 +65,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 	{% } else if (colVal.Attribute.IsVersion || colVal.Attribute.IsPrimary && (new [] { typeof(Guid), typeof(Guid?) }.Contains(colVal.CsType) || colVal.Attribute.IsIdentity)) { %}
 		{% if (getitem != null) { %}
 		<tr>
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<input name=""{#colVal.CsName}"" type=""text"" readonly class=""datepicker"" style=""width:20%;background-color:#ddd;"" />
 			</td>
@@ -71,7 +73,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 		{% } %}
 	{% } else if (new [] { typeof(bool), typeof(bool?) }.Contains(colVal.CsType)) { %}
 		<tr>
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<input name=""{#colVal.CsName}"" type=""checkbox"" value=""true"" />
 			</td>
@@ -79,7 +81,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 	{% } else if (new [] { typeof(DateTime), typeof(DateTime?) }.Contains(colVal.CsType) && new [] { ""create_time"", ""update_time"", ""createtime"", ""updatetime"" }.Contains(colVal.CsName.ToLower())) { %}
 		{% if (getitem != null) { %}
 		<tr>
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<input name=""{#colVal.CsName}"" type=""text"" readonly class=""datepicker"" style=""width:20%;background-color:#ddd;"" />
 			</td>
@@ -87,14 +89,14 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 		{% } %}
 	{% } else if (new [] { typeof(int), typeof(int?), typeof(uint), typeof(uint?), typeof(long), typeof(long?), typeof(ulong), typeof(ulong?), typeof(short), typeof(short?), typeof(ushort), typeof(ushort?), typeof(byte), typeof(byte?), typeof(sbyte), typeof(sbyte?) }.Contains(colVal.CsType)) { %}
 		<tr>
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<input name=""{#colVal.CsName}"" type=""text"" class=""form-control"" data-inputmask=""'mask': '9', 'repeat': 6, 'greedy': false"" data-mask style=""width:200px;"" />
 			</td>
 		</tr>
 	{% } else if (new [] { typeof(decimal), typeof(decimal?), typeof(double), typeof(double?), typeof(float), typeof(float?) }.Contains(colVal.CsType)) { %}
 		<tr>
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<div class=""input-group"" style=""width:200px;"">
 					<span class=""input-group-addon"">￥</span>
@@ -105,7 +107,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 		</tr>
 	{% } else if (new [] { typeof(DateTime), typeof(DateTime?), typeof(DateTimeOffset), typeof(DateTimeOffset?) }.Contains(colVal.CsType)) { %}
 		<tr>
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<div class=""input-group date"" style=""width:200px;"">
 					<div class=""input-group-addon""><i class=""fa fa-calendar""></i></div>
@@ -115,7 +117,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 		</tr>
 	{% } else if (new [] { typeof(string) }.Contains(colVal.CsType) && (colVal.CsName.ToLower() == ""img"" || colVal.CsName.ToLower().StartsWith(""img_"") || colVal.CsName.ToLower().EndsWith(""_img"") || colVal.CsName.ToLower() == ""path"" || colVal.CsName.ToLower().StartsWith(""path_"") || colVal.CsName.ToLower().EndsWith(""_path""))) { %}
 		<tr>
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<input name=""{#colVal.CsName}"" type=""text"" class=""datepicker"" style=""width:60%;"" />
 				<input name=""{#colVal.CsName}_file"" type=""file"">
@@ -123,14 +125,14 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 		</tr>
 	{% } else if (new [] { typeof(string) }.Contains(colVal.CsType) && new [] { ""varchar(255)"",""nvarchar2(255)"",""varchar(255)"",""nvarchar(255)"",""nvarchar(255)"" }.Contains(colVal.Attribute.DbType.ToLower()) == false) { %}
 		<tr>
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<textarea name=""{#colVal.CsName}"" style=""width:100%;height:100px;"" editor=""ueditor""></textarea>
 			</td>
 		</tr>
 	{% } else if (colVal.CsType.IsEnum && colVal.Attribute.DbType == ""set"") { %}
 		<tr>
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<select name=""{#colVal.CsName}"" data-placeholder=""Select {#colVal.CsName}"" class=""form-control select2"" multiple>
 					<option @for=""eo in Enum.GetValues(colVal.CsType)"" value=""{#eo}"">{#eo}</option>
@@ -139,7 +141,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 		</tr>
 	{% } else if (colVal.CsType.IsEnum) { %}
 		<tr>
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<select name=""{#colVal.CsName}"">
 					<option value="""">------ 请选择 ------</option>
@@ -149,7 +151,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 		</tr>
 	{% } else { %}
 		<tr>
-			<td>{#colVal.Comment}</td>
+			<td>{#getComment(colVal)}</td>
 			<td>
 				<input name=""{#colVal.CsName}"" type=""text"" class=""datepicker"" style=""width:60%;"" />
 			</td>
@@ -211,7 +213,12 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 	})();
 </script>";
 
-		public static readonly string List = @"<div class=""box"">
+		public static readonly string List = @"
+{%
+Func<FreeSql.Internal.Model.ColumnInfo, string> getComment = col => string.IsNullOrEmpty(col.Comment) ? col.CsName : col.Comment;
+%}
+
+<div class=""box"">
 	<div class=""box-header with-border"">
 		<h3 id=""box-title"" class=""box-title""></h3>
 		<span class=""form-group mr15""></span><a href=""./add"" data-toggle=""modal"" class=""btn btn-success pull-right"">添加</a>
@@ -227,7 +234,7 @@ var manyToOneFilter = getlistfilter.Values.Where(a =>
 					<tr>
 						<th scope=""col"" style=""width:2%;""><input type=""checkbox"" onclick=""$('#GridView1 tbody tr').each(function (idx, el) { var chk = $(el).find('td:first input[type=\'checkbox\']')[0]; if (chk) chk.checked = !chk.checked; });"" /></th>
 
-						<th @for=""colVal in tb.ColumnsByCs"" scope=""col"">{#colVal.Value.Comment}</th>
+						<th @for=""colVal in tb.ColumnsByCs"" scope=""col"">{#getComment(colVal.Value)}</th>
 						
 						<th scope=""col"" style=""width:5%;"">&nbsp;</th>
 					</tr>
