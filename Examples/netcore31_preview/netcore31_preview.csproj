@@ -6,16 +6,16 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-      <DocumentationFile>TestDemo01.xml</DocumentationFile>
+      <DocumentationFile>netcore31_preview.xml</DocumentationFile>
       <WarningLevel>3</WarningLevel>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FreeSql.Provider.Sqlite" Version="1.9.0" />
+        <PackageReference Include="FreeSql.Provider.Sqlite" Version="2.0.102" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\FreeSql.AdminLTE.Preview\FreeSql.AdminLTE.Preview.csproj" />
+      <ProjectReference Include="..\..\FreeSql.AdminLTE.Preview\FreeSql.AdminLTE.Preview.csproj" />
     </ItemGroup>
 
 </Project>

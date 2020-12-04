@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using netcore31_preview.Entitys;
+using System;
 using System.Diagnostics;
 
 namespace TestDemo01
@@ -18,11 +20,8 @@ namespace TestDemo01
                 .UseConnectionString(FreeSql.DataType.Sqlite, @"Data Source=|DataDirectory|/document.db;Pooling=true;Max Pool Size=10")
                 .UseAutoSyncStructure(true)
                 .UseLazyLoading(true)
-
-                .UseMonitorCommand(cmd => Trace.WriteLine(cmd.CommandText))
+                .UseMonitorCommand(cmd => Console.WriteLine(cmd.CommandText + "\r\n"))
                 .Build();
-
-            Fsql.Aop.CurdBefore += (_, e) => Trace.WriteLine(e.Sql);
         }
 
         public IConfiguration Configuration { get; }
@@ -30,7 +29,6 @@ namespace TestDemo01
 
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllersWithViews();
             services.AddSingleton(Fsql);
         }
@@ -45,10 +43,10 @@ namespace TestDemo01
 
             //可以配置子目录访问，如：/testadmin/
             app.UseFreeAdminLtePreview("/",
-                typeof(TestDemo01.Entitys.Song),
-                typeof(TestDemo01.Entitys.Tag),
-                typeof(TestDemo01.Entitys.User),
-                typeof(TestDemo01.Entitys.UserImage)
+                typeof(Song),
+                typeof(Tag),
+                typeof(User),
+                typeof(UserImage)
             );
         }
     }
