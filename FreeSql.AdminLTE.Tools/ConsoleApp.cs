@@ -197,8 +197,8 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include=""FreeSql.Provider.Sqlite"" Version=""2.0.105"" />
-    <PackageReference Include=""FreeSql.AdminLTE"" Version=""2.0.105"" />
+    <PackageReference Include=""FreeSql.Provider.Sqlite"" Version=""2.3.200"" />
+    <PackageReference Include=""FreeSql.AdminLTE"" Version=""2.3.200"" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include=""{currentCsproj}"" />

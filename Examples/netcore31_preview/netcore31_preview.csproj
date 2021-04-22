@@ -11,7 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FreeSql.Provider.Sqlite" Version="2.0.105" />
+        <PackageReference Include="FreeSql.Provider.Sqlite" Version="2.3.200" />
     </ItemGroup>
 
     <ItemGroup>
