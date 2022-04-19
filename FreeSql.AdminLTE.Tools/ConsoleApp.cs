@@ -46,7 +46,7 @@ namespace FreeSql.AdminLTE.Tools
   # Github # {0}
 
 ", Color.SlateGray,
-new Colorful.Formatter("https://github.com/2881099/FreeSql", Color.DeepSkyBlue));
+new Colorful.Formatter("https://github.com/2881099/FreeSql.AdminLTE", Color.DeepSkyBlue));
 
             this.ArgsOutput = Directory.GetCurrentDirectory();
 			string args0 = args[0].Trim().ToLower();
@@ -83,7 +83,7 @@ new Colorful.Formatter("https://github.com/2881099/FreeSql", Color.DeepSkyBlue))
     > {3} {4} MyTest\.Model\..+ -Code ""entityTypes.FirstOrDefault()?.Assembly.GetType(\""FreeSql.BaseEntity\"").GetMethod(\""Initialization\"").Invoke(null, new object[] { gen.Orm });""
 
 ", Color.SlateGray,
-new Colorful.Formatter("基于 .NETCore 2.1 环境，在控制台当前目录的项目下，根据实体类生成 AdminLTE 后台管理功能的相关文件。", Color.SlateGray),
+new Colorful.Formatter("基于 .net6.0 环境，在控制台当前目录的项目下，根据实体类生成 AdminLTE 后台管理功能的相关文件。", Color.SlateGray),
 new Colorful.Formatter("1、实体类的注释（请开启项目XML文档）；", Color.SlateGray),
 new Colorful.Formatter("2、实体类的导航属性配置（可生成繁琐的常用后台管理功能）。", Color.SlateGray),
 new Colorful.Formatter("FreeSql.AdminLTE.Tools", Color.White),
@@ -197,8 +197,8 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include=""FreeSql.Provider.Sqlite"" Version=""2.3.200"" />
-    <PackageReference Include=""FreeSql.AdminLTE"" Version=""2.3.200"" />
+    <PackageReference Include=""FreeSql.Provider.Sqlite"" Version=""3.2.500"" />
+    <PackageReference Include=""FreeSql.AdminLTE"" Version=""3.2.500"" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include=""{currentCsproj}"" />

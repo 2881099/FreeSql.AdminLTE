@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30717.126
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FreeSql.AdminLTE", "FreeSql.AdminLTE\FreeSql.AdminLTE.csproj", "{25B8615F-D062-4144-9EAD-DC9DD1A09834}"
 EndProject
@@ -16,7 +16,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FreeSql.AdminLTE.Preview", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FreeSql.AdminLTE.Tools", "FreeSql.AdminLTE.Tools\FreeSql.AdminLTE.Tools.csproj", "{61A1110B-F568-452D-8415-D5F0FA5110EF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "netcore31_preview", "Examples\netcore31_preview\netcore31_preview.csproj", "{181586BC-8A6A-4343-A84C-47F727AEE0F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "net60_preview", "Examples\net60_preview\net60_preview.csproj", "{58F29AA9-6037-4005-A72E-3412AEBB13B4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EBB8C7AA-4197-4698-8CD6-17BE6B312D9D}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,24 +69,24 @@ Global
 		{61A1110B-F568-452D-8415-D5F0FA5110EF}.Release|x64.Build.0 = Release|Any CPU
 		{61A1110B-F568-452D-8415-D5F0FA5110EF}.Release|x86.ActiveCfg = Release|Any CPU
 		{61A1110B-F568-452D-8415-D5F0FA5110EF}.Release|x86.Build.0 = Release|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Debug|x64.Build.0 = Debug|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Debug|x86.Build.0 = Debug|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Release|x64.ActiveCfg = Release|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Release|x64.Build.0 = Release|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Release|x86.ActiveCfg = Release|Any CPU
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2}.Release|x86.Build.0 = Release|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Debug|x64.Build.0 = Debug|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Debug|x86.Build.0 = Debug|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Release|x64.ActiveCfg = Release|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Release|x64.Build.0 = Release|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Release|x86.ActiveCfg = Release|Any CPU
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{181586BC-8A6A-4343-A84C-47F727AEE0F2} = {4121332F-CB36-467C-8D9B-503E962737F1}
+		{58F29AA9-6037-4005-A72E-3412AEBB13B4} = {4121332F-CB36-467C-8D9B-503E962737F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {74314515-BD24-4E95-BD66-D3536D213FF1}

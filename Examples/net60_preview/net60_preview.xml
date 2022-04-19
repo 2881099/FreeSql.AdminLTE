@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>netcore31_preview</name>
+        <name>net60_preview</name>
     </assembly>
     <members>
         <member name="T:netcore31_preview.Entitys.Song">

@@ -5,8 +5,8 @@ QQ群：4336577(已满)、8578575(在线)、52508226(在线)
 | 项目 | 版本 |
 | -- | -- |
 | FreeSql.AdminLTE | netstandard2.0、net45 |
-| FreeSql.AdminLTE.Tools | netcoreapp3.1 |
-| FreeSql.AdminLTE.Preview | netcoreapp3.1 |
+| FreeSql.AdminLTE.Tools | net6.0 |
+| FreeSql.AdminLTE.Preview | net6.0 |
 
 三个包产生的 AdminLTE 功能几乎一样，都是根据实体类、导航关系生成默认的繁琐的后台管理功能。
 

@@ -1,17 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
-        <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+        <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-      <DocumentationFile>netcore31_preview.xml</DocumentationFile>
+      <DocumentationFile>net60_preview.xml</DocumentationFile>
       <WarningLevel>3</WarningLevel>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FreeSql.Provider.Sqlite" Version="2.3.200" />
+        <PackageReference Include="FreeSql.Provider.Sqlite" Version="3.2.500" />
     </ItemGroup>
 
     <ItemGroup>
