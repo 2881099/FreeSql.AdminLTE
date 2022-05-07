@@ -296,7 +296,7 @@ public static class GlobalExtensions
 
 					<li class=""treeview active"">
 						<a href=""#""><i class=""fa fa-laptop""></i><span>通用管理</span><i class=""fa fa-angle-left pull-right""></i></a>
-						<ul class=""treeview-menu"">{string.Join("\r\n", entityTypes.Select(et => $@"<li><a href=""{_options.ControllerRouteBase}{et.Name}/""><i class=""fa fa-circle-o""></i>{Orm.CodeFirst.GetTableByEntity(et).Comment.IsNullOrEmtpty(et.Name)}</a></li>"))}</ul>
+						<ul class=""treeview-menu"">{string.Join("\r\n", entityTypes.Select(et => $@"<li><a href=""{_options.ControllerRouteBase}{et.Name}/""><i class=""fa fa-circle-o""></i>{Orm.CodeFirst.GetTableByEntity(et).Comment.FirstLineOrValue(et.Name)}</a></li>"))}</ul>
 					</li>
 
 				</ul>
@@ -582,7 +582,7 @@ public static class GlobalExtensions
                         {
                             var mnNs = $"mn_{prop.Name}_{tref.RefColumns[0].CsName}";
                             listFromQuery += $", [FromQuery] {tref.RefColumns[0].CsType.GetGenericName()}[] {mnNs}";
-                            listFromQuerySelect += $"\r\n                .WhereIf({mnNs}?.Any() == true, a => a.{prop.Name}.AsSelect().Any(b => {mnNs}.Contains(b.{tref.RefColumns[0].CsName})))";
+                            listFromQuerySelect += $"\r\n                .WhereIf({mnNs}?.Any() == true, a => a.{prop.Name}.Any(b => {mnNs}.Contains(b.{tref.RefColumns[0].CsName})))";
 
                             editIncludeMany += $".IncludeMany(a => a.{prop.Name})";
                             editFromForm += $", [FromForm] {tref.RefColumns[0].CsType.GetGenericName()}[] {mnNs}";
@@ -626,7 +626,7 @@ public static class GlobalExtensions
                         //    }
                         //    multiNs += "?.ToArray()";
                         //    listFromQueryMultiCombine += $"\r\n            var mn_{tref.RefMiddleEntityType.Name}_multi = {multiNs};";
-                        //    listFromQuerySelect += $"\r\n                .WhereIf(mn_{tref.RefMiddleEntityType.Name}_multi?.Any() == true, a => a.{prop.Key}.AsSelect().Any(b => mn_{tref.RefMiddleEntityType.Name}_multi.Contains({string.Join(@" + ""|"" + ", tref.RefColumns.Select(a => $"b.{a.CsName}"))})))";
+                        //    listFromQuerySelect += $"\r\n                .WhereIf(mn_{tref.RefMiddleEntityType.Name}_multi?.Any() == true, a => a.{prop.Key}.Any(b => mn_{tref.RefMiddleEntityType.Name}_multi.Contains({string.Join(@" + ""|"" + ", tref.RefColumns.Select(a => $"b.{a.CsName}"))})))";
                         //}
                         break;
                 }
@@ -748,7 +748,7 @@ namespace {_options.ControllerNameSpace}.Controllers
                 listTd.Append($"\r\n								<td><input type=\"checkbox\" id=\"id\" name=\"id\" value=\"{string.Join(",", tb.Primarys.Select(pk => $"@item.{pk.CsName}"))}\" /></td>");
                 foreach (var col in tb.Primarys)
                 {
-                    listTh.Append($"\r\n						<th scope=\"col\">{(col.Comment ?? col.CsName)}{(col.Attribute.IsIdentity ? "(自增)" : "")}</th>");
+                    listTh.Append($"\r\n						<th scope=\"col\">{(col.Comment.FirstLineOrValue(col.CsName))}{(col.Attribute.IsIdentity ? "(自增)" : "")}</th>");
                     listTd.Append($"\r\n								<td>@item.{col.CsName}</td>");
                     if (dicCol.ContainsKey(col.CsName) == false) dicCol.Add(col.CsName, true);
                 }
@@ -765,7 +765,7 @@ namespace {_options.ControllerNameSpace}.Controllers
                         var tbref = Orm.CodeFirst.GetTableByEntity(tref.RefEntityType);
                         var tbrefName = tbref.Columns.Values.Where(a => a.CsType == typeof(string)).FirstOrDefault()?.CsName;
                         if (!string.IsNullOrEmpty(tbrefName)) tbrefName = $"?.{tbrefName}";
-                        listTh.Append($"\r\n						<th scope=\"col\">{string.Join(",", tref.Columns.Select(a => a.Comment ?? a.CsName))}</th>");
+                        listTh.Append($"\r\n						<th scope=\"col\">{string.Join(",", tref.Columns.Select(a => a.Comment.FirstLineOrValue(a.CsName)))}</th>");
                         listTd.Append($"\r\n								<td>[{string.Join(",", tref.Columns.Select(a => $"@item.{a.CsName}"))}] @item.{prop.Name}{tbrefName}</td>");
                         foreach (var col in tref.Columns) if (dicCol.ContainsKey(col.CsName) == false) dicCol.Add(col.CsName, true);
                         break;
@@ -775,7 +775,7 @@ namespace {_options.ControllerNameSpace}.Controllers
             {
                 if (tb.ColumnsByCsIgnore.ContainsKey(col.CsName)) continue;
                 if (dicCol.ContainsKey(col.CsName)) continue;
-                listTh.Append($"\r\n						<th scope=\"col\">{(col.Comment ?? col.CsName)}</th>");
+                listTh.Append($"\r\n						<th scope=\"col\">{(col.Comment.FirstLineOrValue(col.CsName))}</th>");
                 listTd.Append($"\r\n								<td>@item.{col.CsName}</td>");
             }
             if (tb.Primarys.Any())
@@ -801,11 +801,11 @@ namespace {_options.ControllerNameSpace}.Controllers
                 {
                     case TableRefType.ManyToOne:
                         selectCode += $"\r\n	var fk_{prop.Name}s = fsql.Select<{tref.RefEntityType.GetClassName()}>().ToList();";
-                        fscCode += $"\r\n			{{ name: '{tbref.Comment.IsNullOrEmtpty(prop.Name)}', field: '{string.Join(",", tref.Columns.Select(a => a.CsName))}', text: @Html.Json(fk_{prop.Name}s.Select(a => a{tbrefName})), value: @Html.Json(fk_{prop.Name}s.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
+                        fscCode += $"\r\n			{{ name: '{tbref.Comment.FirstLineOrValue(prop.Name)}', field: '{string.Join(",", tref.Columns.Select(a => a.CsName))}', text: @Html.Json(fk_{prop.Name}s.Select(a => a{tbrefName})), value: @Html.Json(fk_{prop.Name}s.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
                         break;
                     case TableRefType.ManyToMany:
                         selectCode += $"\r\n	var mn_{prop.Name} = fsql.Select<{tref.RefEntityType.GetClassName()}>().ToList();";
-                        fscCode += $"\r\n			{{ name: '{tbref.Comment.IsNullOrEmtpty(prop.Name)}', field: '{string.Join(",", tref.RefColumns.Select(a => $"mn_{prop.Name}_{a.CsName}"))}', text: @Html.Json(mn_{prop.Name}.Select(a => a{tbrefName})), value: @Html.Json(mn_{prop.Name}.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
+                        fscCode += $"\r\n			{{ name: '{tbref.Comment.FirstLineOrValue(prop.Name)}', field: '{string.Join(",", tref.RefColumns.Select(a => $"mn_{prop.Name}_{a.CsName}"))}', text: @Html.Json(mn_{prop.Name}.Select(a => a{tbrefName})), value: @Html.Json(mn_{prop.Name}.Select(a => {string.Join(" + \"|\" + ", tref.RefColumns.Select(a => "a." + a.CsName))})) }},";
                         break;
                 }
             }
@@ -898,25 +898,25 @@ namespace {_options.ControllerNameSpace}.Controllers
                 if (csType == typeof(bool))
                     editTr.Append($@"
 					    <tr>
-							<td>{(col.Comment ?? col.CsName)}</td>
+							<td>{(col.Comment.FirstLineOrValue( col.CsName))}</td>
 							<td id=""{col.CsName}_td""><input name=""{col.CsName}"" type=""checkbox"" value=""true"" /></td>
 						</tr>");
                 else if (csType == typeof(DateTime) && new[] { "create_time", "update_time" }.Contains(lname))
                     editTr.Append($@"
 					    <tr>
-							<td>{(col.Comment ?? col.CsName)}</td>
+							<td>{(col.Comment.FirstLineOrValue(col.CsName))}</td>
 							<td><input name=""{col.CsName}"" type=""text"" class=""datepicker"" style=""width:20%;background-color:#ddd;"" /></td>
 						</tr>");
                 else if (new[] { typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(long), typeof(ulong), typeof(int), typeof(uint) }.Contains(csType))
                     editTr.Append($@"
 					    <tr>
-							<td>{(col.Comment ?? col.CsName)}</td>
+							<td>{(col.Comment.FirstLineOrValue(col.CsName))}</td>
 							<td><input name=""{col.CsName}"" type=""text"" class=""form-control"" data-inputmask=""'mask': '9', 'repeat': 6, 'greedy': false"" data-mask style=""width:200px;"" /></td>
 						</tr>");
                 else if (new[] { typeof(double), typeof(float), typeof(decimal) }.Contains(csType))
                     editTr.Append($@"
 					    <tr>
-							<td>{(col.Comment ?? col.CsName)}</td>
+							<td>{(col.Comment.FirstLineOrValue(col.CsName))}</td>
 							<td>
                                 <div class=""input-group"" style=""width:200px;"">
 									<span class=""input-group-addon"">￥</span>
@@ -928,14 +928,14 @@ namespace {_options.ControllerNameSpace}.Controllers
                 else if (new[] { typeof(DateTime), typeof(DateTimeOffset) }.Contains(csType))
                     editTr.Append($@"
 					    <tr>
-							<td>{(col.Comment ?? col.CsName)}</td>
+							<td>{(col.Comment.FirstLineOrValue(col.CsName))}</td>
 							<td><input name=""{col.CsName}"" type=""text"" class=""datepicker"" /></td>
 						</tr>");
                 else if (csType == typeof(string) && (lname == "img" || lname.StartsWith("img_") || lname.EndsWith("_img") ||
                     lname == "path" || lname.StartsWith("path_") || lname.EndsWith("_path")))
                     editTr.Append($@"
 					    <tr>
-							<td>{(col.Comment ?? col.CsName)}</td>
+							<td>{(col.Comment.FirstLineOrValue(col.CsName))}</td>
 							<td>
                                 <input name=""{col.CsName}"" type=""text"" class=""datepicker"" style=""width:60%;"" />
 								<input name=""{col.CsName}_file"" type=""file"">
@@ -944,13 +944,13 @@ namespace {_options.ControllerNameSpace}.Controllers
                 else if (csType == typeof(string) && new[] { "content", "text", "descript", "description", "reason", "html", "data" }.Contains(lname))
                     editTr.Append($@"
 					    <tr>
-							<td>{(col.Comment ?? col.CsName)}</td>
+							<td>{(col.Comment.FirstLineOrValue(col.CsName))}</td>
 							<td><textarea name=""{col.CsName}"" style=""width:100%;height:100px;"" editor=""ueditor""></textarea></td>
 						</tr>");
                 else if (csType.IsEnum)
                     editTr.Append($@"
 					    <tr>
-							<td>{(col.Comment ?? col.CsName)}</td>
+							<td>{(col.Comment.FirstLineOrValue(col.CsName))}</td>
 							<td>
                                 <select name=""{col.CsName}""{(csType.GetCustomAttribute<FlagsAttribute>() != null ? $@" data-placeholder=""Select a {csType.GetClassName()}"" class=""form-control select2"" multiple>" : @"><option value="""">------ 请选择 ------</option>")}
 									@foreach (object eo in Enum.GetValues(typeof({csType.FullName}))) {{ <option value=""@eo"">@eo</option> }}
@@ -960,7 +960,7 @@ namespace {_options.ControllerNameSpace}.Controllers
                 else
                     editTr.Append($@"
 					    <tr>
-							<td>{(col.Comment ?? col.CsName)}</td>
+							<td>{(col.Comment.FirstLineOrValue(col.CsName))}</td>
 							<td><input name=""{col.CsName}"" type=""text"" class=""datepicker"" style=""width:60%;"" /></td>
 						</tr>");
             };
@@ -971,7 +971,7 @@ namespace {_options.ControllerNameSpace}.Controllers
                     editTr.Append($@"
 						@if (item != null) {{
 							<tr>
-								<td>{(col.Comment ?? col.CsName)}{(col.Attribute.IsIdentity ? "(自增)" : "")}</td>
+								<td>{(col.Comment.FirstLineOrValue(col.CsName))}{(col.Attribute.IsIdentity ? "(自增)" : "")}</td>
 								<td><input name=""{col.CsName}"" type=""text"" readonly class=""datepicker"" style=""width:20%;background-color:#ddd;"" /></td>
 							</tr>
 						}}");
@@ -1009,7 +1009,7 @@ namespace {_options.ControllerNameSpace}.Controllers
                         {
                             editTr.Append($@"
 						<tr>
-							<td>{string.Join(",", tref.Columns.Select(a => a.Comment ?? a.CsName))}</td>
+							<td>{string.Join(",", tref.Columns.Select(a => a.Comment.FirstLineOrValue(a.CsName)))}</td>
 							<td id=""{prop.Name}_td""></td>
 						</tr>");
                             editParentFk.Append($@"
@@ -1018,7 +1018,7 @@ namespace {_options.ControllerNameSpace}.Controllers
                         else
                             editTr.Append($@"
 						<tr>
-							<td>{string.Join(",", tref.Columns.Select(a => a.Comment ?? a.CsName))}</td>
+							<td>{string.Join(",", tref.Columns.Select(a => a.Comment.FirstLineOrValue(a.CsName)))}</td>
 							<td>
                                 <select name=""{tref.Columns[0].CsName}"">
 									<option value="""">------ 请选择 ------</option>
@@ -1132,5 +1132,10 @@ namespace {_options.ControllerNameSpace}.Controllers
         }
 
         public static string IsNullOrEmtpty(this string that, string newvalue) => string.IsNullOrEmpty(that) ? newvalue : that;
+        public static string FirstLineOrValue(this string that, string newvalue)
+        {
+            if (string.IsNullOrEmpty(that)) return newvalue;
+            return that.Split('\n').First().Trim();
+        }
     }
 }
