@@ -60,8 +60,7 @@ namespace FreeSql
 						if (await Restful.Use(context, fsql, restfulRequestPath, dicEntityTypes)) return;
 					}
 					else if (reqPath.StartsWith(requestPathBase)) {
-						if (reqPath == "/favicon.ico/") return;
-						if (reqPath.StartsWith("/freesql-adminlte-tools"))
+						if (reqPath.StartsWith($"{requestPathBase}freesql-adminlte-tools"))
                         {
 							if (req.Method == "POST")
 							{
@@ -86,6 +85,7 @@ namespace FreeSql
 						//前端UI
 						if (await Admin.Use(context, fsql, requestPathBase, dicEntityTypes)) return;
 					}
+					if (reqPath == "/favicon.ico/") return;
 
 				} catch (Exception ex) {
 					await Utils.Jsonp(context, new { code = 500, message = ex.Message });
