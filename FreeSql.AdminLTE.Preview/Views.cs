@@ -294,6 +294,73 @@ foreach (var colPk in tb.Primarys) {
 </script>
 ";
 
+		public static readonly string FreeSqlGenerator = @"
+
+<div class=""box"">
+	<div class=""box-header with-border"">
+		<h3 class=""box-title"" id=""box-title"">【生成代码】后台管理系统</h3>
+	</div>
+	<div class=""box-body"">
+		<div class=""table-responsive"">
+			<form id=""form_add"" method=""post"">
+				<input type=""hidden"" name=""__callback"" value=""edit_callback"" />
+				<div>
+					<table cellspacing=""0"" rules=""all"" class=""table table-bordered table-hover"" border=""1"" style=""border-collapse:collapse;"">
+
+						<tr>
+							<td>控制器命名空间</td>
+							<td>
+								<input name=""ControllerNameSpace"" type=""text"" class=""datepicker"" style=""width:60%;"" value=""FreeSql.AdminLTE"" />
+							</td>
+						</tr>
+						<tr>
+							<td>控制器请求路径前辍</td>
+							<td>
+								<input name=""ControllerRouteBase"" type=""text"" class=""datepicker"" style=""width:60%;"" value=""/AdminLTE/"" />
+							</td>
+						</tr>
+						<tr>
+							<td>控制器基类</td>
+							<td>
+								<input name=""ControllerBase"" type=""text"" class=""datepicker"" style=""width:60%;"" value=""Controller"" />
+							</td>
+						</tr>
+						<tr>
+							<td>输出目录</td>
+							<td>
+								<input name=""OutputDirectory"" type=""text"" class=""datepicker"" style=""width:60%;"" value=""{#OutputDirectory}"" />
+							</td>
+						</tr>
+
+						<tr>
+							<td width=""8%"">&nbsp</td>
+							<td>
+								<input type=""submit"" value=""生成 FreeSql.AdminLTE 代码"" />
+							</td>
+						</tr>
+					</table>
+				</div>
+			</form>
+
+		</div>
+
+		<div id=""generator_log_div""></div>
+	</div>
+</div>
+
+<script type=""text/javascript"">
+	(function () {
+		top.edit_callback = function (rt) {
+			top.$('#generator_log_div').html(rt.log.replace(/\r\n/g, '<br>'));
+			alert('生成成功，请检查！');
+		};
+
+		var form = $('#form_add')[0];
+
+		top.mainViewInit();
+	})();
+</script>";
+
 		public static readonly string Index = @"<!DOCTYPE html>
 <html lang=""zh-cmn-Hans"">
 <head>

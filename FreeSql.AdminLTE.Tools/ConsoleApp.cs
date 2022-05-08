@@ -16,7 +16,6 @@ namespace FreeSql.AdminLTE.Tools
         public GeneratorOptions ArgsOptions = new GeneratorOptions();
         public string ArgsFind;
         public string ArgsOutput;
-        public string ArgsCode;
         public bool ArgsFirst;
 
         public ConsoleApp(string[] args, ManualResetEvent wait) {
@@ -70,17 +69,12 @@ new Colorful.Formatter("https://github.com/2881099/FreeSql.AdminLTE", Color.Deep
         -ControllerRouteBase   控制器请求路径前辍（默认：/AdminLTE/）
         -ControllerBase        控制器基类（默认：Controller）
 
-        -Code                  生成前执行代码，解决FluentAPI设置的特性无法读取（gen.Orm）
         -First                 是否生成 ApiResult.cs、index.html、htm 静态资源（首次生成）
         -Output                输出路径（默认：当前目录）
 
   # 生成到其他目录 #
 
     > {3} {4} MyTest\.Model\..+ -Output d:/test
-
-  # 生成BaseEntity实体类
-
-    > {3} {4} MyTest\.Model\..+ -Code ""entityTypes.FirstOrDefault()?.Assembly.GetType(\""FreeSql.BaseEntity\"").GetMethod(\""Initialization\"").Invoke(null, new object[] { gen.Orm });""
 
 ", Color.SlateGray,
 new Colorful.Formatter("基于 .net6.0 环境，在控制台当前目录的项目下，根据实体类生成 AdminLTE 后台管理功能的相关文件。", Color.SlateGray),
@@ -112,10 +106,6 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
                         a++;
                         break;
 
-                    case "-Code":
-                        ArgsCode = args[a + 1];
-                        a++;
-                        break;
                     case "-First":
                         ArgsFirst = true;
                         break;
@@ -142,7 +132,6 @@ new Colorful.Formatter("-Find", Color.ForestGreen)
 -ControllerNameSpace={ArgsOptions.ControllerNameSpace}
 -ControllerRouteBase={ArgsOptions.ControllerRouteBase}
 -ControllerBase={ArgsOptions.ControllerBase}
--Code={ArgsCode}
 -First={ArgsFirst}
 -Output={ArgsOutput}
 
@@ -242,7 +231,9 @@ namespace temp_freesql_adminlte_tools
                 ControllerRouteBase = @""{ArgsOptions.ControllerRouteBase.Replace("\"", "\"\"")}""
             }}))
             {{
-                {(string.IsNullOrEmpty(ArgsCode) ? "" : $"{ArgsCode}")}
+                var method = entityTypes?.Select(a => a.Assembly.GetType(""FreeSql.BaseEntity"")?.GetMethods().First(a => a.Name == ""Initialization"" && a.GetParameters().FirstOrDefault()?.ParameterType.FullName == ""IFreeSql""))
+                    .Where(a => a != null).FirstOrDefault();
+                method?.Invoke(null, method.GetParameters().Select(a => a.ParameterType.FullName == ""IFreeSql"" ? (object)gen.Orm : (object)null).ToArray());
                 gen.TraceLog = log => Console.WriteLine(log);
                 gen.Build(@""{ArgsOutput.Replace("\"", "\"\"")}"", entityTypes.ToArray(), {(ArgsFirst ? "true" : "false")});
             }}
@@ -251,6 +242,7 @@ namespace temp_freesql_adminlte_tools
     }}
 }}
 ");
+
 
             Console.WriteFormatted("\r\n正在运行生成程序 …\r\n", Color.DarkGreen);
             shellret = ShellRun(tmpdir, "dotnet run");

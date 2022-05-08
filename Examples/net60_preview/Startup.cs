@@ -41,6 +41,9 @@ namespace TestDemo01
             app.UseRouting();
             app.UseEndpoints(a => a.MapControllers());
 
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
             //可以配置子目录访问，如：/testadmin/
             app.UseFreeAdminLtePreview("/",
                 typeof(Song),

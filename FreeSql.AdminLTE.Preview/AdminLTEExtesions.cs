@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -49,6 +50,7 @@ namespace FreeSql
 						foreach (var et in dicEntityTypes) {
 							sb.AppendLine($@"<li><a href=""{requestPathBase}{et.Key}/""><i class=""fa fa-circle-o""></i>{fsql.CodeFirst.GetTableByEntity(et.Value).Comment.FirstLineOrValue(et.Key)}</a></li>");
 						}
+						sb.AppendLine($@"<li><a href=""{requestPathBase}FreeSql-AdminLTE-Tools""><i class=""fa fa-code""></i>【生成代码二次开发】</a></li>");
 						sb.AppendLine(@"</ul>");
 						await res.WriteAsync(Views.Index.Replace(@"<ul class=""treeview-menu""></ul>", sb.ToString()));
 						return;
@@ -59,6 +61,28 @@ namespace FreeSql
 					}
 					else if (reqPath.StartsWith(requestPathBase)) {
 						if (reqPath == "/favicon.ico/") return;
+						if (reqPath.StartsWith("/freesql-adminlte-tools"))
+                        {
+							if (req.Method == "POST")
+							{
+								var logs = new StringBuilder();
+								using (var gen = new FreeSql.AdminLTE.Generator(new FreeSql.AdminLTE.GeneratorOptions
+								{
+									ControllerBase = req.Form["ControllerBase"].FirstOrDefault() ?? @"BaseController",
+									ControllerNameSpace = req.Form["ControllerNameSpace"].FirstOrDefault() ?? @"FreeSql.AdminLTE",
+									ControllerRouteBase = req.Form["ControllerRouteBase"].FirstOrDefault() ?? @"/adminlte/"
+								}))
+								{
+									gen.TraceLog = log => logs.AppendLine(log);
+									gen.Build(req.Form["OutputDirectory"].FirstOrDefault() ?? AppContext.BaseDirectory, entityTypes, true);
+								}
+								await Utils.Jsonp(context, new { code = 0, success = true, message = "Success", log = logs.ToString() });
+								return;
+							}
+
+							await res.WriteAsync(Views.FreeSqlGenerator.Replace("{#OutputDirectory}", Directory.GetCurrentDirectory()));
+							return;
+                        }
 						//前端UI
 						if (await Admin.Use(context, fsql, requestPathBase, dicEntityTypes)) return;
 					}

@@ -329,17 +329,20 @@ namespace FreeSql {
 							}
 							if (reqv[0].Length == 0) return true;
 
+							for (var a = 0; a < reqv[0].Length; a++)
+							{
+								object delitem = Activator.CreateInstance(entityType);
+								var delpkindex = 0;
+								foreach (var delpk in tb.Primarys)
+									fsql.SetEntityValueWithPropertyName(entityType, delitem, delpk.CsName, reqv[delpkindex++][a]);
+								delitems.Add(delitem);
+							}
 							using (var ctx = fsql.CreateDbContext()) {
 								var dbset = ctx.Set<object>();
 								dbset.AsType(entityType);
 
-								for (var a = 0; a < reqv[0].Length; a++) {
-									object delitem = Activator.CreateInstance(entityType);
-									var delpkindex = 0;
-									foreach (var delpk in tb.Primarys)
-										fsql.SetEntityValueWithPropertyName(entityType, delitem, delpk.CsName, reqv[delpkindex++][a]);
-									dbset.Remove(delitem);
-								}
+								//await dbset.RemoveCascadeByDatabaseAsync()
+								dbset.RemoveRange(delitems);
 								await ctx.SaveChangesAsync();
 							}
 

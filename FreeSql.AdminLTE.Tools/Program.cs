@@ -27,3 +27,5 @@ namespace FreeSql.AdminLTE.Tools
 		}
     }
 }
+
+//dotnet tool update -g freesql.adminlte.tools --add-source C:\Users\28810\Desktop\github\FreeSql.AdminLTE\FreeSql.AdminLTE.Tools\bin\Debug\
