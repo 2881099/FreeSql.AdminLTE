@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using FreeSql.Internal.Model;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace FreeSql {
 	static class Admin {
@@ -342,7 +343,9 @@ namespace FreeSql {
 								dbset.AsType(entityType);
 
 								//await dbset.RemoveCascadeByDatabaseAsync()
-								dbset.RemoveRange(delitems);
+								//dbset.RemoveRange(delitems);
+								var delret = dbset.GetType().GetMethod("RemoveRangeCascadeByMemoryOrDatabase", BindingFlags.Instance | BindingFlags.NonPublic)
+									.Invoke(dbset, new object[] { delitems, false }) as List<object>;
 								await ctx.SaveChangesAsync();
 							}
 

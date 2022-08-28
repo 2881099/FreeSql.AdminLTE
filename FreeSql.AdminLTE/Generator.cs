@@ -355,7 +355,7 @@ public static class GlobalExtensions
 				if (hash === '') return //location.hash = $('li.treeview.active ul li a:first').attr('href');//'#base64url' + hash_encode('/resume_type/');
 				if (hash.indexOf('#base64url') !== 0) return;
 				var act = hash_decode(hash.substr(10, hash.length - 10));
-				//叶湘勤增加的代码，加载或者提交form后，显示内容
+				//加载或者提交form后，显示内容
 				function ajax_success(refererUrl) {{
 					if (refererUrl == location.pathname) {{ startRouter(); return function(){{}}; }}
 					var hash = '#base64url' + hash_encode(refererUrl);
@@ -489,6 +489,7 @@ public static class GlobalExtensions
             ns.Add("System.Collections.Generic", true);
             ns.Add("System.Collections", true);
             ns.Add("System.Linq", true);
+            ns.Add("using System.Reflection", true);
             ns.Add("System.Threading.Tasks", true);
             ns.Add("Microsoft.AspNetCore.Http", true);
             ns.Add("Microsoft.AspNetCore.Mvc", true);
@@ -686,7 +687,9 @@ public static class GlobalExtensions
                 {{
                     //ret = await ctx.Set<{entityType.GetClassName()}>().RemoveCascadeByDatabaseAsync(...);
                     var dbset = ctx.Set<{entityType.GetClassName()}>();
-                    ret = dbset.GetType().GetMethod(""RemoveRangeCascadeByMemoryOrDatabase"").Invoke(dbset, new object[] {{ delitems, false }}) as List<object>;
+                    ret = dbset.GetType().GetMethod(""RemoveRangeCascadeByMemoryOrDatabase"", BindingFlags.Instance | BindingFlags.NonPublic)
+                        .Invoke(dbset, new object[] {{ delitems, false }}) as List<object>;
+                    await ctx.SaveChangesAsync();
                 }}
             }}
             var affrows = ret.Count;
@@ -695,12 +698,15 @@ public static class GlobalExtensions
         }}";
             }
             #endregion
-
+            
             #region 拼接代码
             return $@"using {string.Join(";\r\nusing ", ns.Keys)};
 
 namespace {_options.ControllerNameSpace}.Controllers
 {{
+    /// <summary>
+    /// {tb.Comment.Replace("\r\n", "\n").Replace("\n", "\r\n	/// ")}
+    /// </summary>
     [Route(""{_options.ControllerRouteBase}[controller]"")]
     public class {entityType.GetClassName().Replace(".", "_")}Controller : {_options.ControllerBase}
     {{
