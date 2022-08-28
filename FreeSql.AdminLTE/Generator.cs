@@ -489,7 +489,7 @@ public static class GlobalExtensions
             ns.Add("System.Collections.Generic", true);
             ns.Add("System.Collections", true);
             ns.Add("System.Linq", true);
-            ns.Add("using System.Reflection", true);
+            ns.Add("System.Reflection", true);
             ns.Add("System.Threading.Tasks", true);
             ns.Add("Microsoft.AspNetCore.Http", true);
             ns.Add("Microsoft.AspNetCore.Mvc", true);
@@ -700,7 +700,7 @@ public static class GlobalExtensions
             #endregion
             
             #region 拼接代码
-            return $@"using {string.Join(";\r\nusing ", ns.Keys)};
+            return $@"using {string.Join(";\r\nusing ", ns.Keys.OrderBy(a => a))};
 
 namespace {_options.ControllerNameSpace}.Controllers
 {{
