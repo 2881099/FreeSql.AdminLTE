@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace TestDemo01 {
+namespace net60_preview
+{
 	public class Program {
 		public static void Main(string[] args) {
 			CreateWebHostBuilder(args).Build().Run();

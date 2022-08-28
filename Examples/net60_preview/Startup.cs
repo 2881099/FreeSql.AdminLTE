@@ -1,14 +1,21 @@
 ﻿using FreeSql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using netcore31_preview.Entitys;
+using net60_preview.Entitys;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 
-namespace TestDemo01
+namespace net60_preview
 {
     public class Startup
     {
@@ -19,7 +26,6 @@ namespace TestDemo01
             Fsql = new FreeSql.FreeSqlBuilder()
                 .UseConnectionString(FreeSql.DataType.Sqlite, @"Data Source=|DataDirectory|/document.db;Pooling=true;Max Pool Size=10")
                 .UseAutoSyncStructure(true)
-                .UseLazyLoading(true)
                 .UseMonitorCommand(cmd => Console.WriteLine(cmd.CommandText + "\r\n"))
                 .Build();
         }
@@ -51,6 +57,52 @@ namespace TestDemo01
                 typeof(User),
                 typeof(UserImage)
             );
+        }
+
+        void TestRoute()
+        {
+            var controllers = typeof(Startup).Assembly.GetTypes().Where(a => typeof(Controller).IsAssignableFrom(a)).ToArray();
+            var routes = controllers.Select(a =>
+            {
+                var tb = Fsql.CodeFirst.GetTableByEntity(a);
+                var name = string.IsNullOrWhiteSpace(tb.Comment) ? a.Name : tb.Comment;
+                var controller = a.Name.EndsWith("Controller") ? a.Name.Remove(a.Name.Length - 10) : a.Name;
+                var path = a.GetCustomAttribute<RouteAttribute>()?.Template.Replace("[controller]", controller) ?? $"/controller";
+                var route = new AdminRoute
+                {
+                    Name = name,
+                    Path = path,
+                    Create_time = DateTime.Now,
+                    Extdata = JsonConvert.SerializeObject(new { icon = "org_tree_page", path = "/authuser", name = "sysadmin_authuser", component = "@/view/sysadmin/authuser-page.vue" }),
+                    Childs = a.GetMethods().Select(m =>
+                    {
+                        HttpMethodAttribute httpmethod = m.GetCustomAttribute<HttpGetAttribute>();
+                        if (httpmethod == null) httpmethod = m.GetCustomAttribute<HttpPostAttribute>();
+                        if (httpmethod == null) httpmethod = m.GetCustomAttribute<HttpPutAttribute>();
+                        if (httpmethod == null) httpmethod = m.GetCustomAttribute<HttpDeleteAttribute>();
+                        if (httpmethod != null) return new AdminRoute
+                        {
+                            Name = LocalGetMethodName(httpmethod.Name),
+                            Path = $"{httpmethod.HttpMethods.FirstOrDefault()} {path}/{httpmethod.Template}",
+                            Create_time = DateTime.Now,
+                        };
+                        return null;
+                    }).Where(a => a != null).ToList()
+                };
+                return route;
+            }).ToList();
+
+            string LocalGetMethodName(string name)
+            {
+                switch (name)
+                {
+                    case "": return "列表";
+                    case "add": return "添加";
+                    case "edit": return "编辑";
+                    case "del": return "添加";
+                }
+                return name;
+            }
         }
     }
 

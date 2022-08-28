@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
-namespace netcore31_preview.Entitys
+namespace net60_preview.Entitys
 {
     /// <summary>
     /// 音乐

@@ -4,82 +4,152 @@
         <name>net60_preview</name>
     </assembly>
     <members>
-        <member name="T:netcore31_preview.Entitys.Song">
+        <member name="T:FreeSql.AdminLTE.Controllers.SongController">
             <summary>
             音乐
             </summary>
         </member>
-        <member name="P:netcore31_preview.Entitys.Song.Id">
-            <summary>
-            主键
-            </summary>
-        </member>
-        <member name="P:netcore31_preview.Entitys.Song.Create_time">
-            <summary>
-            创建时间
-            </summary>
-        </member>
-        <member name="P:netcore31_preview.Entitys.Song.Is_deleted">
-            <summary>
-            软删除
-            </summary>
-        </member>
-        <member name="P:netcore31_preview.Entitys.Song.Title">
-            <summary>
-            标题
-            </summary>
-        </member>
-        <member name="P:netcore31_preview.Entitys.Song.Url">
-            <summary>
-            地址
-            </summary>
-        </member>
-        <member name="T:netcore31_preview.Entitys.Tag">
+        <member name="T:FreeSql.AdminLTE.Controllers.TagController">
             <summary>
             标签
             </summary>
         </member>
-        <member name="P:netcore31_preview.Entitys.Tag.Id">
-            <summary>
-            主键
-            </summary>
-        </member>
-        <member name="P:netcore31_preview.Entitys.Tag.Parent_id">
-            <summary>
-            父id
-            </summary>
-        </member>
-        <member name="P:netcore31_preview.Entitys.Tag.Ddd">
-            <summary>
-            测试字段
-            </summary>
-        </member>
-        <member name="P:netcore31_preview.Entitys.Tag.Name">
-            <summary>
-            名字
-            </summary>
-        </member>
-        <member name="T:netcore31_preview.Entitys.User">
+        <member name="T:FreeSql.AdminLTE.Controllers.UserController">
             <summary>
             用户管理
             </summary>
         </member>
-        <member name="P:netcore31_preview.Entitys.User.Name">
-            <summary>
-            用户名
-            </summary>
-        </member>
-        <member name="T:netcore31_preview.Entitys.UserImage">
+        <member name="T:FreeSql.AdminLTE.Controllers.UserImageController">
             <summary>
             用户图片
             </summary>
         </member>
-        <member name="P:netcore31_preview.Entitys.UserImage.Url">
+        <member name="P:ApiResult.Code">
+            <summary>
+            错误代码
+            </summary>
+        </member>
+        <member name="P:ApiResult.Message">
+            <summary>
+            错误消息
+            </summary>
+        </member>
+        <member name="T:net60_preview.Entitys.AdminRoute">
+            <summary>
+            音乐
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.AdminRoute.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.AdminRoute.Path">
+            <summary>
+            路径
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.AdminRoute.Create_time">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.AdminRoute.ParentId">
+            <summary>
+            父节点
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.AdminRoute.Name">
+            <summary>
+            标题
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.AdminRoute.Extdata">
+            <summary>
+            前端数据
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.AdminRoute.Remark">
+            <summary>
+            备注
+            </summary>
+        </member>
+        <member name="T:net60_preview.Entitys.Song">
+            <summary>
+            音乐
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.Song.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.Song.Create_time">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.Song.Is_deleted">
+            <summary>
+            软删除
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.Song.Title">
+            <summary>
+            标题
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.Song.Url">
+            <summary>
+            地址
+            </summary>
+        </member>
+        <member name="T:net60_preview.Entitys.Tag">
+            <summary>
+            标签
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.Tag.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.Tag.Parent_id">
+            <summary>
+            父id
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.Tag.Ddd">
+            <summary>
+            测试字段
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.Tag.Name">
+            <summary>
+            名字
+            </summary>
+        </member>
+        <member name="T:net60_preview.Entitys.User">
+            <summary>
+            用户管理
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.User.Name">
+            <summary>
+            用户名
+            </summary>
+        </member>
+        <member name="T:net60_preview.Entitys.UserImage">
+            <summary>
+            用户图片
+            </summary>
+        </member>
+        <member name="P:net60_preview.Entitys.UserImage.Url">
             <summary>
             Url地址
             </summary>
         </member>
-        <member name="P:netcore31_preview.Entitys.UserImage.User_id">
+        <member name="P:net60_preview.Entitys.UserImage.User_id">
             <summary>
             用户id
             </summary>
