@@ -4,36 +4,6 @@
         <name>net60_preview</name>
     </assembly>
     <members>
-        <member name="T:FreeSql.AdminLTE.Controllers.SongController">
-            <summary>
-            音乐
-            </summary>
-        </member>
-        <member name="T:FreeSql.AdminLTE.Controllers.TagController">
-            <summary>
-            标签
-            </summary>
-        </member>
-        <member name="T:FreeSql.AdminLTE.Controllers.UserController">
-            <summary>
-            用户管理
-            </summary>
-        </member>
-        <member name="T:FreeSql.AdminLTE.Controllers.UserImageController">
-            <summary>
-            用户图片
-            </summary>
-        </member>
-        <member name="P:ApiResult.Code">
-            <summary>
-            错误代码
-            </summary>
-        </member>
-        <member name="P:ApiResult.Message">
-            <summary>
-            错误消息
-            </summary>
-        </member>
         <member name="T:net60_preview.Entitys.AdminRoute">
             <summary>
             音乐

@@ -264,13 +264,13 @@ public static class GlobalExtensions
 						<!-- User Account Menu-->
 						<li class=""dropdown user user-menu"">
 							<!-- Menu Toggle Button--><a href=""#"" data-toggle=""dropdown"" class=""dropdown-toggle"">
-								<!-- The user image in the navbar--><img src=""/htm/img/user2-160x160.jpg"" alt=""User Image"" class=""user-image"">
+								<!-- The user image in the navbar--><img src=""./htm/img/user2-160x160.jpg"" alt=""User Image"" class=""user-image"">
 								<!-- hidden-xs hides the username on small devices so only the image appears.--><span class=""hidden-xs""></span>
 							</a>
 							<ul class=""dropdown-menu"">
 								<!-- The user image in the menu-->
 								<li class=""user-header"">
-									<img src=""/htm/img/user2-160x160.jpg"" alt=""User Image"" class=""img-circle"">
+									<img src=""./htm/img/user2-160x160.jpg"" alt=""User Image"" class=""img-circle"">
 									<p></p>
 								</li>
 								<!-- Menu Footer-->
