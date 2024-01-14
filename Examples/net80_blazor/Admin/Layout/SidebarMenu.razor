@@ -1,0 +1,43 @@
+﻿@inherits LayoutComponentBase
+
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        @if (menus != null)
+        {
+            foreach (var menu in menus.Where(a => a.ParentId == 0))
+            {
+                <li class="nav-item menu-open">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <p>
+                            @menu.Label
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        @foreach (var menu2 in menus.Where(a => a.ParentId == menu.Id))
+                        {
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="@menu2.Path" Match="NavLinkMatch.All">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>@menu2.Label</p>
+                                </NavLink>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+        }
+    </ul>
+</nav>
+
+@code {
+    List<MenuEntity> menus;
+
+    async protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        menus = await fsql.Select<MenuEntity>().ToListAsync();
+        StateHasChanged();
+    }
+}

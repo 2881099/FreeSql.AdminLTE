@@ -1,0 +1,77 @@
+﻿@inherits LayoutComponentBase
+
+@for (var a = 0; a < Filters?.Length; a++)
+{
+    var localA = a;
+    <div class="row @(a > 0 ? "mt-3 " : "")">
+        <div style="float:left;width:60px">@Filters[a].Label</div>
+        <div>
+            <span @onclick="e => ButtonClick(localA, -1)" class="btn @(Filters[a].Texts.Any(b => b.Selected) == false ? "btn-primary" : "btn-default") btn-xs pl-2 pr-2">全部</span>
+            @for (var b = 0; b < Filters[a].Texts.Length; b++)
+            {
+                var localB = b;
+                <span @onclick="e => ButtonClick(localA, localB)" class="btn @(Filters[a].Texts[b].Selected ? "btn-primary " : "btn-default") btn-xs ml-2 pl-2 pr-2">@Filters[a].Texts[b].Item</span>
+            }
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public QueryOptions QueryOptions { get; set; }
+    SearchFilterInfo[] Filters => QueryOptions.Filters;
+
+    protected override void OnInitialized()
+    {
+        foreach (var filter in Filters)
+        {
+            var query = nav.GetQueryStringValues(filter.QueryStringName);
+            foreach(var qval in query)
+            {
+                for (var x = 0; x < filter.Texts.Length; x++)
+                    if (filter.Values[x] == qval)
+                        filter.Texts[x].Selected = true;
+            }
+        }
+    }
+
+    async Task ButtonClick(int a, int b)
+    {
+        if (b < 0 || Filters[a].Multiple == false)
+        {
+            foreach (var btn in Filters[a].Texts)
+            {
+                if (b >= 0 && Filters[a].Texts[b] == btn) continue;
+                btn.Selected = false;
+            }
+        }
+        if (b >= 0)
+        {
+            Filters[a].Texts[b].Selected = !Filters[a].Texts[b].Selected;
+            if (Filters[a].Multiple && Filters[a].Texts.All(b => b.Selected))
+            {
+                foreach (var btn in Filters[a].Texts)
+                    btn.Selected = false;
+            }
+        }
+
+        var dict = new Dictionary<string, object>();
+        dict[QueryOptions.PageNumberQueryStringName] = null;
+
+        foreach(var filter in Filters)
+        {
+            var vals = new List<string>();
+            for (var x = 0; x < filter.Texts.Length; x++)
+                if (filter.Texts[x].Selected) 
+                    vals.Add(filter.Values[x]);
+            if (vals.Any() == false) dict[filter.QueryStringName] = null;
+            dict[filter.QueryStringName] = vals.ToArray();
+        }
+        var url = nav.GetUriWithQueryParameters(dict);
+        nav.NavigateTo(url);
+        QueryOptions.PageNumber = 1;
+        if (QueryOptions.InvokeQueryAsync != null)
+            await QueryOptions.InvokeQueryAsync();
+    }
+}

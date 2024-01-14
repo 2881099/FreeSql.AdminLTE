@@ -1,0 +1,25 @@
+﻿
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="AdminLTE-3.2.0/plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="AdminLTE-3.2.0/plugins/toastr/toastr.min.css">
+    <link rel="stylesheet" href="AdminLTE-3.2.0/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="net80_blazor.styles.css" />
+    <HeadOutlet @rendermode="@InteractiveServer" />
+</head>
+<body class="hold-transition sidebar-mini">
+
+    <Routes @rendermode="@InteractiveServer" />
+    <script src="AdminLTE-3.2.0/plugins/jquery/jquery.min.js"></script>
+    <script src="AdminLTE-3.2.0/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="AdminLTE-3.2.0/plugins/toastr/toastr.min.js"></script>
+    <script src="AdminLTE-3.2.0/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="AdminLTE-3.2.0/dist/js/adminlte.min.js"></script>
+    <script src="_framework/blazor.web.js"></script>
+    
+</body>
+</html>

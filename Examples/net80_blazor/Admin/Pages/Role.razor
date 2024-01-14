@@ -1,0 +1,127 @@
+﻿@page "/Admin/Role"
+
+<PageTitle>权限管理</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <SearchFilter QueryOptions="q" />
+                </div>
+                <div class="card-header">
+                    <button @onclick="e => Delete()" type="button" class="btn btn-default btn-sm @(items.Any(a => a.Selected) ? "" : "disabled")"><i class="far fa-trash-alt"></i></button>
+                    <button @onclick="e => item = new()" data-toggle="modal" data-target="#modal-add" type="button" class="btn btn-default btn-sm"><i class="fas fa-plus"></i> 添加</button>
+                    <button @onclick="e => Load()" type="button" class="btn btn-default btn-sm"><i class="fas fa-sync-alt"></i> 刷新</button>
+                    <div class="float-right">
+                        <SearchText QueryOptions="q" />
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered table-sm m-0">
+                            <thead>
+                                <tr>
+                                    <th width="60"><div class="icheck-primary sm"><input @onclick="e => items.ForEach(a => a.Selected = !a.Selected)" type="checkbox" @bind="selectAll"></div></th>
+                                    <th>角色名称</th>
+                                    <th>描述</th>
+                                    <th width="130">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in items)
+                                {
+                                    <tr>
+                                        <td><div class="icheck-primary sm"><input type="checkbox" @bind="item.Selected" /></div></td>
+                                        <td>@item.Item.Label</td>
+                                        <td>@item.Item.Description</td>
+                                        <td>
+                                            <button @onclick="e => fsql.CopyTo(item.Item, this.item)" data-toggle="modal" data-target="#modal-add" type="button" class="btn btn-default btn-xs"><i class="fa fa-edit"></i>编辑</button>
+                                            <button @onclick="e => Delete(item.Item)" type="button" class="btn btn-default btn-xs"><i class="far fa-trash-alt"></i>删除</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <Pagination QueryOptions="q" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (item != null)
+{
+    <Modal ClientId="modal-add" Title="@(item.Id > 0 ? "修改角色" : "添加角色")" OnSave="Save">
+        <Body>
+            <div class="form-group">
+                <label for="roleName">名称</label>
+                <input @bind="@item.Label" type="text" class="form-control" id="roleName" placeholder="不可为空，50字以内" maxlength="50" data-valid="true">
+            </div>
+            <div class="form-group">
+                <label for="roleDesc">描述</label>
+                <textarea @bind="@item.Description" class="form-control" rows="3" id="roleDesc" placeholder="描述信息(可为空)，500字以内" maxlength="500"></textarea>
+            </div>
+        </Body>
+    </Modal>
+}
+
+@code {
+    [Inject] IBaseRepository<RoleEntity> repository { get; set; }
+
+    QueryOptions q = new QueryOptions(new[]
+    {
+        new SearchFilterInfo("状态1", "status1", "正在采集,采集完成", "1,2"),
+        new SearchFilterInfo("状态2", "status2", "正在采集,采集中,采集完成", "1,2,3"),
+        new SearchFilterInfo("状态3", "status3", true, "正在采集,采集中,采集失败,采集完成", "1,2,3,4")
+    });
+    RoleEntity item = new();
+    public List<ItemSelected<RoleEntity>> items = new();
+
+    async protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        q.PageSize = 5;
+        q.InvokeQueryAsync = Load;
+        await Load();
+    }
+
+    async Task Load()
+    {
+        var list = await repository.Select
+            .WhereIf(q.Filters[0].HasValue, a => a.Id >= q.Filters[0].SelectedValue<int>())
+            .WhereIf(q.Filters[1].HasValue, a => a.Id >= q.Filters[1].SelectedValue<int>())
+            // .WhereIf(q.Filters[2].HasValue, a => q.Filters[2].SelectedValues<long>().Contains(a.Id))
+            .WhereIf(q.Filters[2].HasValue, a => q.Filters[2].SelectedValues<int>().Any(b => a.Id > b))
+            .WhereIf(q.SearchText.IsNull() == false, a => a.Label.Contains(q.SearchText) || a.Description.Contains(q.SearchText))
+            .Count(out var total).Page(q.PageNumber, 5).ToListAsync();
+        q.Total = total;
+        items.Clear();
+        items.AddRange(list.Select(a => new ItemSelected<RoleEntity>(a)));
+        StateHasChanged();
+    }
+
+    bool selectAll;
+    async Task Delete(RoleEntity item = null)
+    {
+        var selectedItems = item == null ? items.Where(a => a.Selected).Select(a => a.Item).ToArray() : new[] { item };
+        if (selectedItems.Any() == false) return;
+        if (await JS.Confirm($"确定要删除 {selectedItems.Length}行 记录吗？", "删除之后无法恢复！") == false) return;
+        var affrows = await repository.DeleteAsync(selectedItems);
+        await Load();
+        selectAll = false;
+        //await JS.Success($"成功删除 {affrows}行 记录！");
+    }
+    async Task Save()
+    {
+        var isedit = item.Id > 0;
+        if (isedit && await JS.Confirm($"确定要修改数据吗？") == false) return;
+        await repository.InsertOrUpdateAsync(item);
+        await Load();
+        //await JS.Success($"{(isedit ? "修改" : "添加")}成功！");
+    }
+}

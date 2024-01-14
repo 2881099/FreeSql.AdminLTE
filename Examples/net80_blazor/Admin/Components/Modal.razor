@@ -1,0 +1,79 @@
+﻿@inherits LayoutComponentBase
+
+<div class="modal fade @ClassName" id="@ClientId" data-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-scrollable">
+        <div class="modal-content">
+            @if (overlay)
+            {
+                <div class="overlay">
+                    <i class="fas fa-2x fa-sync fa-spin"></i>
+                </div>
+            }
+
+            <div class="modal-header">
+                <h4 class="modal-title">@Title</h4>
+                <button type="button" class="close" aria-label="Close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="form-horizontal">
+                <div class="modal-body">
+                    @Body
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" @onclick="Save">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string ClientId { get; set; } = $"modal-{Guid.NewGuid().ToString("n")}";
+
+    async Task Show() => await JS.InvokeVoidAsync("eval", $"$('#{ClientId}').modal('show')");
+    async Task Hide() => await JS.InvokeVoidAsync("eval", $"$('#{ClientId}').modal('hide')");
+
+    [Parameter]
+    public string Title { get; set; } = "标题";
+
+    [Parameter]
+    public string ClassName{ get; set; }
+
+    bool _visible;
+    [Parameter]
+    public bool Visible
+    {
+        get => _visible;
+        set
+        {
+            if (value) this.InvokeAsync(Show);
+            else this.InvokeAsync(Hide);
+            _visible = value;
+        }
+    }
+
+    [Parameter]
+    public EventCallback OnSave { get; set; }
+
+    bool overlay = false;
+    async Task Save()
+    {
+        overlay = true;
+        try
+        {
+            if (OnSave.HasDelegate)
+            {
+                await OnSave.InvokeAsync();
+            }
+            await Hide();
+        }
+        finally
+        {
+            overlay = false;
+        }
+    }
+}

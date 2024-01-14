@@ -1,0 +1,42 @@
+﻿@inherits LayoutComponentBase
+
+<div class="input-group input-group-sm">
+    <input @bind="_value" @onkeyup="KeyHandler" @onkeyup:preventDefault type="text" class="form-control" placeholder="Search">
+    <div class="input-group-append">
+        <div @onclick="SearchClick" class="btn btn-primary">
+            <i class="fas fa-search"></i>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public QueryOptions QueryOptions { get; set; }
+
+    string _value;
+    protected override void OnInitialized()
+    {
+        _value = nav.GetQueryStringValue(QueryOptions.SearchTextQueryStringName);
+        QueryOptions.SearchText = _value;
+    }
+
+    async Task KeyHandler(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await SearchClick();
+    }
+
+    async Task SearchClick()
+    {
+        QueryOptions.SearchText = _value;
+        var dict = new Dictionary<string, object>();
+        dict[QueryOptions.SearchTextQueryStringName] = _value;
+        dict[QueryOptions.PageNumberQueryStringName] = null;
+        var url = nav.GetUriWithQueryParameters(dict);
+        nav.NavigateTo(url);
+        QueryOptions.PageNumber = 1;
+        if (QueryOptions.InvokeQueryAsync != null)
+            await QueryOptions.InvokeQueryAsync();
+    }
+}

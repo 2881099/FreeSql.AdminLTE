@@ -1,0 +1,73 @@
+﻿@inherits LayoutComponentBase
+
+<div class="btn-group btn-group-sm">
+    @if (QueryOptions.MaxPageNumber > 0 && QueryOptions.PageNumber > 1)
+    {
+        <span class="btn btn-default" @onclick="PageClick(1)">首页</span>
+        <span class="btn btn-default" @onclick="PageClick(QueryOptions.PageNumber - 1)">上页</span>
+    }
+
+    @if (_forStart > 1)
+    {
+        <span class="btn btn-default">..</span>
+    }
+    @for(var index = _forStart; index <= _forEnd; index++)
+    {
+        <span class="btn btn-@(index == QueryOptions.PageNumber ? "primary" : "default")" @onclick="PageClick(index)">@index</span>
+    }
+
+    @if (_forEnd < QueryOptions.MaxPageNumber)
+    {
+        <span class="btn btn-default">..</span>
+    }
+    @if (QueryOptions.PageNumber < QueryOptions.MaxPageNumber)
+    {
+        <span class="btn btn-default" @onclick="PageClick(QueryOptions.PageNumber + 1)">下页</span>
+        <span class="btn btn-default" @onclick="PageClick(QueryOptions.MaxPageNumber)">尾页</span>
+    }
+    <span class="btn btn-default">
+        页数：@if (QueryOptions.MaxPageNumber >= 10) {<input type="number" @bind="@_page" @onkeyup="KeyHandler" @onkeyup:preventDefault style="font-size:12px;margin:0;padding:0;width:60px;height:20px;" />}
+        else { @QueryOptions.PageNumber}/@QueryOptions.MaxPageNumber
+        每页：@QueryOptions.PageSize
+        总计：@QueryOptions.Total
+    </span>
+</div>
+
+@code {
+    [Parameter]
+    public QueryOptions QueryOptions { get; set; }
+
+    int _page;
+    int _forStart => Math.Max(1, QueryOptions.PageNumber - 5);
+    int _forEnd => Math.Min(QueryOptions.PageNumber + 5, QueryOptions.MaxPageNumber);
+    protected override void OnInitialized()
+    {
+        _page = nav.GetQueryStringValue(QueryOptions.PageNumberQueryStringName).ConvertTo<int>();
+        QueryOptions.PageNumber = _page;
+    }
+
+    async Task KeyHandler(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            QueryOptions.PageNumber = _page;
+            await NavigateToQuery();
+        }
+    }
+
+    EventCallback PageClick(int pageNumber)
+    {
+        return EventCallback.Factory.Create(this, async () =>
+        {
+            QueryOptions.PageNumber = pageNumber;
+            await NavigateToQuery();
+        });
+    }
+    async Task NavigateToQuery()
+    {
+        var url = nav.GetUriWithQueryParameter(QueryOptions.PageNumberQueryStringName, QueryOptions.PageNumber);
+        nav.NavigateTo(url);
+        if (QueryOptions.InvokeQueryAsync != null)
+            await QueryOptions.InvokeQueryAsync();
+    }
+}
