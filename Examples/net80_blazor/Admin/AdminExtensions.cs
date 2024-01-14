@@ -3,11 +3,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System.Web;
 
-class SharedInfo
-{
-
-}
-
 public static class AdminExtensions
 {
 

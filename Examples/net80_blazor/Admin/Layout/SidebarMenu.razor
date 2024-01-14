@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
 
 <nav class="mt-2">
     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
@@ -17,11 +18,25 @@
                     <ul class="nav nav-treeview">
                         @foreach (var menu2 in menus.Where(a => a.ParentId == menu.Id))
                         {
+                            
+                            var isActive = string.Compare(currentPath, nav.ToAbsoluteUri(menu2.Path).AbsolutePath, true) == 0;
                             <li class="nav-item">
-                                <NavLink class="nav-link" href="@menu2.Path" Match="NavLinkMatch.All">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>@menu2.Label</p>
-                                </NavLink>
+                                @if (isActive && currentQuery.IsNull() == false)
+                                {
+                                    @* QueryString 分页之后，再点菜单强制刷新，否则 url 变化，但页面上无法通知状态 *@
+                                    <a @onclick="e => nav.NavigateTo(menu2.Path, true)" class="nav-link active" href="@menu2.Path">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>@menu2.Label</p>
+                                    </a>
+                                }
+                                else
+                                {
+                                    @* NavLink 不支持匹配 QueryString *@
+                                    <a class="nav-link @(isActive ? "active" : "")" href="@menu2.Path">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>@menu2.Label</p>
+                                    </a>
+                                }
                             </li>
                         }
                     </ul>
@@ -33,11 +48,28 @@
 
 @code {
     List<MenuEntity> menus;
+    string currentPath;
+    string currentQuery;
 
     async protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
         menus = await fsql.Select<MenuEntity>().ToListAsync();
+        var uri = new Uri(nav.Uri);
+        currentPath = uri.AbsolutePath;
+        currentQuery = uri.Query;
         StateHasChanged();
+
+        locationChangingHandler = nav.RegisterLocationChangingHandler(e =>
+        {
+            var uri = nav.ToAbsoluteUri(e.TargetLocation);
+            currentPath = uri.AbsolutePath;
+            currentQuery = uri.Query;
+            StateHasChanged();
+            return ValueTask.CompletedTask;
+        });
     }
+
+    IDisposable locationChangingHandler;
+    public void Dispose() => locationChangingHandler?.Dispose();
 }

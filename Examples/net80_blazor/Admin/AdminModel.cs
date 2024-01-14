@@ -1,5 +1,10 @@
-﻿namespace net80_blazor.Admin.Components
+﻿namespace net80_blazor.Admin
 {
+    class SharedInfo
+    {
+
+    }
+
     public class ItemSelected<T>
     {
         public T Item { get; set; }
@@ -7,6 +12,7 @@
 
         public ItemSelected(T item) => Item = item;
     }
+
     public class QueryOptions
     {
         public QueryOptions() { }
